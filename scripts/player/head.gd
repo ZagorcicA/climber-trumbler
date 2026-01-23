@@ -1,0 +1,68 @@
+extends RigidBody2D
+
+# Head controller that tracks cursor when limbs are selected
+# Maintains upright position when idle
+
+var target_rotation: float = 0.0
+var is_tracking: bool = false
+
+# Head behavior parameters
+const LOOK_SPEED = 50.0  # How fast head turns toward target
+const UPRIGHT_FORCE = 3000.0  # Force to keep head upright when idle
+const MAX_LOOK_ANGLE = 80.0  # Max degrees head can turn (prevents breaking neck)
+
+func _ready():
+	pass
+
+func _physics_process(delta):
+	if is_tracking:
+		# Head looks at cursor
+		_track_cursor(delta)
+	else:
+		# Head tries to stay upright
+		_stabilize_upright(delta)
+
+func track_position(world_position: Vector2):
+	"""Make head look toward a specific world position"""
+	is_tracking = true
+
+	# Calculate angle from head to target
+	var direction = world_position - global_position
+	target_rotation = direction.angle() + PI/2  # Adjust because sprite faces UP by default (not right)
+
+
+	# Clamp to max angle to prevent unnatural neck breaking
+	var current_angle = rotation
+	var angle_diff = wrapf(target_rotation - current_angle, -PI, PI)
+	var max_angle_rad = deg_to_rad(MAX_LOOK_ANGLE)
+
+	if abs(angle_diff) > max_angle_rad:
+		target_rotation = current_angle + sign(angle_diff) * max_angle_rad
+
+func stop_tracking():
+	"""Stop tracking and return to idle (upright) behavior"""
+	is_tracking = false
+
+func _track_cursor(delta):
+	"""Smoothly rotate head toward target rotation"""
+	var angle_diff = wrapf(target_rotation - rotation, -PI, PI)
+
+	# Directly set angular velocity to rotate toward target
+	var desired_angular_vel = angle_diff * LOOK_SPEED
+	angular_velocity = desired_angular_vel
+
+
+func _stabilize_upright(delta):
+	"""Apply force to keep head pointing up (0 degrees)"""
+	var upright_angle = 0.0  # 0 degrees = pointing up
+	var angle_diff = wrapf(upright_angle - rotation, -PI, PI)
+
+	# Directly set angular velocity to rotate toward upright
+	var desired_angular_vel = angle_diff * 10.0  # Strong correction
+	angular_velocity = desired_angular_vel
+
+
+func wrapf(value: float, min_val: float, max_val: float) -> float:
+	"""Wrap angle to range [-PI, PI]"""
+	var range_size = max_val - min_val
+	return min_val + fmod(fmod(value - min_val, range_size) + range_size, range_size)

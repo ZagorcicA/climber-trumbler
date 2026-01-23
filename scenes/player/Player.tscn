@@ -1,0 +1,96 @@
+[gd_scene load_steps=6 format=3 uid="uid://b7y65ousjcsar"]
+
+[ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://c3k8nan4p5q6r" path="res://scenes/player/Limb.tscn" id="2_gfjak"]
+[ext_resource type="Script" path="res://scripts/player/head.gd" id="3_head"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_torso"]
+size = Vector2(60, 100)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_head"]
+radius = 20.0
+
+[node name="Player" type="Node2D"]
+position = Vector2(628, 228)
+script = ExtResource("1_player")
+
+[node name="Torso" type="RigidBody2D" parent="."]
+collision_mask = 7
+mass = 8.0
+gravity_scale = 0.3
+contact_monitor = true
+max_contacts_reported = 4
+linear_damp = 1.0
+angular_damp = 0.5
+
+[node name="TorsoShape" type="CollisionShape2D" parent="Torso"]
+shape = SubResource("RectangleShape2D_torso")
+
+[node name="TorsoVisual" type="ColorRect" parent="Torso"]
+offset_left = -30.0
+offset_top = -50.0
+offset_right = 30.0
+offset_bottom = 50.0
+color = Color(0.4, 0.6, 0.8, 1)
+metadata/_edit_use_anchors_ = true
+
+[node name="Head" type="RigidBody2D" parent="."]
+position = Vector2(0, -60)
+collision_mask = 7
+mass = 2.0
+linear_damp = 0.3
+angular_damp = 0.1
+script = ExtResource("3_head")
+
+[node name="HeadShape" type="CollisionShape2D" parent="Head"]
+shape = SubResource("CircleShape2D_head")
+
+[node name="HeadVisual" type="ColorRect" parent="Head"]
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+color = Color(0.9, 0.7, 0.6, 1)
+metadata/_edit_use_anchors_ = true
+
+[node name="NeckJoint" type="PinJoint2D" parent="."]
+position = Vector2(0, -50)
+node_a = NodePath("../Torso")
+node_b = NodePath("../Head")
+softness = 0.3
+
+[node name="LeftArm" parent="." instance=ExtResource("2_gfjak")]
+position = Vector2(-38, -10)
+
+[node name="LeftArmJoint" type="PinJoint2D" parent="."]
+position = Vector2(-30, -50)
+node_a = NodePath("../Torso")
+node_b = NodePath("../LeftArm")
+softness = 0.4
+
+[node name="RightArm" parent="." instance=ExtResource("2_gfjak")]
+position = Vector2(38, -10)
+
+[node name="RightArmJoint" type="PinJoint2D" parent="."]
+position = Vector2(30, -50)
+node_a = NodePath("../Torso")
+node_b = NodePath("../RightArm")
+softness = 0.4
+
+[node name="LeftLeg" parent="." instance=ExtResource("2_gfjak")]
+position = Vector2(-22, 90)
+
+[node name="LeftLegJoint" type="PinJoint2D" parent="."]
+position = Vector2(-22, 50)
+node_a = NodePath("../Torso")
+node_b = NodePath("../LeftLeg")
+softness = 0.4
+
+[node name="RightLeg" parent="." instance=ExtResource("2_gfjak")]
+position = Vector2(22, 90)
+
+[node name="RightLegJoint" type="PinJoint2D" parent="."]
+position = Vector2(22, 50)
+node_a = NodePath("../Torso")
+node_b = NodePath("../RightLeg")
+softness = 0.4

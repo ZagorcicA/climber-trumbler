@@ -1,0 +1,69 @@
+Boulder QTE - Game Design Document (Prototype)
+1. Overview
+
+Title: Boulder QTE
+Genre: 2D physics-based puzzle / climbing simulator
+Engine: Godot 4.x
+Perspective: Side-view (2D)
+Platform: PC (Windows/Linux/macOS)
+Goal: Create a small playable prototype demonstrating fun limb-based climbing mechanics using ragdoll physics and stamina management.
+
+2. Core Concept
+
+The player controls a floppy, physics-driven climber who must reach the top of a bouldering wall by manipulating individual limbs. Each limb can grip climbing holds when positioned correctly, but holding on drains stamina. When stamina runs out, the climber falls.
+
+3. Game Pillars
+•	Tactile Physics – Ragdoll limbs with satisfying motion and tension.
+•	Precision and Chaos – Funny but skillful control over limbs.
+•	Puzzle Climbing – Finding the right sequence of holds to reach the top.
+•	Resource Management – Stamina creates risk/reward decisions.
+4. Gameplay Loop
+
+Start: Player spawns at the bottom of a bouldering wall.
+
+Loop:
+1. Select a limb (hand or foot).
+2. Move it toward a hold (mouse or controller).
+3. Latch to hold (press button).
+4. Use other limbs to shift weight and climb upward.
+5. Monitor stamina; rest or risk falling.
+6. Reach the top trigger → win the level.
+
+Fail Condition: Stamina reaches zero and all limbs detach → player falls → restart.
+
+5. Controls
+Action	Input
+Select limb	Click limb or press 1–4
+Move limb target	Move mouse / Arrow keys
+Latch / Detach	Space (latch) / X (detach)
+Restart level	R
+Pause	Esc
+6. Core Mechanics
+
+Limb control, latching, stamina drain, detaching, physics-based movement, win condition via top trigger.
+
+7. Game Structure
+
+Each level is a 2D climbing wall with holds, top trigger, and player. Prototype includes one simple wall.
+
+8. Art Direction
+
+Minimal 2D art style with clear limb and hold readability. Use simple shapes for clarity.
+
+9. Audio Design
+
+Placeholder SFX: latch (click), detach (pop), fall (thud), win (chime).
+
+10. Technical Implementation
+
+Scenes: Player.tscn, Limb.tscn, Hold.tscn, Level1.tscn, StaminaBar.tscn.
+Use RigidBody2D + PinJoint2D for ragdoll physics.
+
+11. UI & Feedback
+
+Stamina bar, active limb highlight, win message, restart prompt.
+
+12. Prototype Goals
+
+MVP includes working limbs, latch/detach, stamina system, win/fail conditions, and one level.
+

@@ -1,0 +1,52 @@
+[gd_scene load_steps=6 format=3 uid="uid://hc0wcgbdfkcx"]
+
+[ext_resource type="PackedScene" uid="uid://b7y65ousjcsar" path="res://scenes/player/Player.tscn" id="1_player"]
+[ext_resource type="Script" path="res://scripts/environment/level.gd" id="2_level"]
+[ext_resource type="PackedScene" uid="uid://bmc80vnhuqqrt" path="res://scenes/environment/Hold.tscn" id="3_x4u4f"]
+[ext_resource type="PackedScene" uid="uid://bvx8k5n4p2qrs" path="res://scenes/ui/StaminaBar.tscn" id="4_stamina"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(2000, 100)
+
+[node name="Level1" type="Node2D"]
+script = ExtResource("2_level")
+
+[node name="Floor" type="StaticBody2D" parent="."]
+position = Vector2(576, 600)
+collision_layer = 2
+
+[node name="FloorShape" type="CollisionShape2D" parent="Floor"]
+shape = SubResource("RectangleShape2D_floor")
+
+[node name="FloorVisual" type="ColorRect" parent="Floor"]
+offset_left = -1000.0
+offset_top = -50.0
+offset_right = 1000.0
+offset_bottom = 50.0
+color = Color(0.3, 0.25, 0.2, 1)
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(576, 480)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(576, 300)
+zoom = Vector2(0.8, 0.8)
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="StaminaBar" parent="UI" instance=ExtResource("4_stamina")]
+
+[node name="Hold1" parent="." instance=ExtResource("3_x4u4f")]
+position = Vector2(695, 607)
+
+[node name="Hold2" parent="." instance=ExtResource("3_x4u4f")]
+position = Vector2(477, 521)
+
+[node name="Hold3" parent="." instance=ExtResource("3_x4u4f")]
+position = Vector2(731, 372)
+
+[node name="Hold4" parent="." instance=ExtResource("3_x4u4f")]
+position = Vector2(480, 330)
+
+[node name="Hold5" parent="." instance=ExtResource("3_x4u4f")]
+position = Vector2(644, 138)

@@ -1,0 +1,32 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+/ios/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs (regenerated locally)
+logs/*.log
+
+# Dev recordings (large files)
+Dev Log/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Editor temp files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Export templates and builds
+/export/
+*.pck
+*.zip

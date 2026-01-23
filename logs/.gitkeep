@@ -1,0 +1,2 @@
+# This file ensures the logs/ directory exists when the repo is cloned.
+# Log files themselves are gitignored - only this placeholder is tracked.

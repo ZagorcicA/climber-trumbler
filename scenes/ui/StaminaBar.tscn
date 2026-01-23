@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://bvx8k5n4p2qrs"]
+
+[ext_resource type="Script" path="res://scripts/ui/stamina_bar.gd" id="1_stamina_bar"]
+
+[node name="StaminaBar" type="ProgressBar"]
+offset_left = 476.0
+offset_top = 20.0
+offset_right = 676.0
+offset_bottom = 47.0
+value = 100.0
+show_percentage = false
+script = ExtResource("1_stamina_bar")
