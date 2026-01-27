@@ -1,5 +1,7 @@
 # Climber Trumbler
 
+Contribution
+
 A 2D physics-based ragdoll climbing game built in Godot 4.3.
 
 Control a floppy ragdoll character with 4 independent limbs to climb a bouldering wall. Manage your stamina strategically - hanging by your arms drains energy fast, while using your legs is more efficient!
@@ -17,13 +19,13 @@ Control a floppy ragdoll character with 4 independent limbs to climb a boulderin
 
 ## Controls
 
-| Key | Action |
-|-----|--------|
-| 1-4 | Select limb (1=Left Arm, 2=Right Arm, 3=Left Leg, 4=Right Leg) |
-| Mouse | Move selected limb |
-| Space | Latch limb to nearest hold |
-| X | Detach limb |
-| R | Restart level |
+| Key   | Action                                                         |
+| ----- | -------------------------------------------------------------- |
+| 1-4   | Select limb (1=Left Arm, 2=Right Arm, 3=Left Leg, 4=Right Leg) |
+| Mouse | Move selected limb                                             |
+| Space | Latch limb to nearest hold                                     |
+| X     | Detach limb                                                    |
+| R     | Restart level                                                  |
 
 ## Development Setup with Claude Code
 
@@ -46,6 +48,7 @@ godot --path . --editor 2>&1 | Tee-Object -FilePath logs/godot_output.log
 ### Windows (Git Bash)
 
 Same as macOS/Linux:
+
 ```bash
 cd /c/path/to/climber-trumbler
 godot --path . --editor 2>&1 | tee logs/godot_output.log
@@ -64,14 +67,14 @@ godot --path . --editor 2>&1 | tee logs/godot_output.log
 
 Your position affects stamina drain/regen:
 
-| Position | Effect |
-|----------|--------|
-| 2 arms only | 2.5x drain (exhausting!) |
-| 1 limb | 3x drain (desperate) |
-| 1 arm + 1 leg | 1.5x drain |
-| 2 legs only | 0.7x drain (efficient) |
-| 3+ limbs | Regenerate (resting) |
-| Free falling | Fast regen |
+| Position      | Effect                   |
+| ------------- | ------------------------ |
+| 2 arms only   | 2.5x drain (exhausting!) |
+| 1 limb        | 3x drain (desperate)     |
+| 1 arm + 1 leg | 1.5x drain               |
+| 2 legs only   | 0.7x drain (efficient)   |
+| 3+ limbs      | Regenerate (resting)     |
+| Free falling  | Fast regen               |
 
 When stamina hits 0, all limbs detach and you fall!
 
@@ -93,6 +96,7 @@ climber-trumbler/
 ## Documentation
 
 See the `claude.md/` folder for detailed technical docs:
+
 - `ARCHITECTURE.md` - System design and data flow
 - `PHYSICS_TUNING_GUIDE.md` - All physics parameters
 - `CURRENT_ISSUES.md` - Known issues and debug info
