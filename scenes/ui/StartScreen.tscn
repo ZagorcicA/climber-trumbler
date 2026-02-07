@@ -106,7 +106,3 @@ theme_override_font_sizes/font_size = 14
 text = "Controls:
 1-4: Select limb | Space: Latch | X: Detach | R: Restart"
 horizontal_alignment = 1
-
-[connection signal="pressed" from="PlayButtonEasy" to="." method="_on_play_button_pressed"]
-[connection signal="pressed" from="PlayButtonMedium" to="." method="_on_play_button_pressed"]
-[connection signal="pressed" from="PlayButtonHard" to="." method="_on_play_button_pressed"]

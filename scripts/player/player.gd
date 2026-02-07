@@ -94,8 +94,20 @@ func _update_stamina(delta: float):
 	Update stamina system based on current limb configuration.
 	Counts which limbs are latched and passes to StaminaManager.
 	"""
-	# Count latched arms (indices 0-1)
+	# Count latched arms (indices 0-1) and gather hold difficulty multipliers
 	var arms_latched = 0
+	var hold_drain_multiplier = 0.0
+	var total_latched = 0
+
+	for limb in limbs:
+		if limb.is_latched:
+			total_latched += 1
+			# Get drain multiplier from the hold this limb is attached to
+			if limb.current_hold and is_instance_valid(limb.current_hold):
+				hold_drain_multiplier += limb.current_hold.get_drain_multiplier()
+			else:
+				hold_drain_multiplier += 1.0  # Default if no valid hold
+
 	if limbs[0].is_latched:  # Left arm
 		arms_latched += 1
 	if limbs[1].is_latched:  # Right arm
@@ -108,8 +120,11 @@ func _update_stamina(delta: float):
 	if limbs[3].is_latched:  # Right leg
 		legs_latched += 1
 
-	# Update StaminaManager with current configuration and grounded state
-	StaminaManager.update_stamina(delta, arms_latched, legs_latched, is_grounded)
+	# Average hold difficulty multiplier (1.0 if no limbs latched)
+	var avg_hold_multiplier = hold_drain_multiplier / total_latched if total_latched > 0 else 1.0
+
+	# Update StaminaManager with current configuration, grounded state, and hold difficulty
+	StaminaManager.update_stamina(delta, arms_latched, legs_latched, is_grounded, avg_hold_multiplier)
 
 func _on_stamina_depleted():
 	"""
