@@ -79,6 +79,8 @@ softness = 0.4
 
 [node name="LeftLeg" parent="." instance=ExtResource("2_gfjak")]
 position = Vector2(-22, 90)
+contact_monitor = true
+max_contacts_reported = 2
 
 [node name="LeftLegJoint" type="PinJoint2D" parent="."]
 position = Vector2(-22, 50)
@@ -88,6 +90,8 @@ softness = 0.4
 
 [node name="RightLeg" parent="." instance=ExtResource("2_gfjak")]
 position = Vector2(22, 90)
+contact_monitor = true
+max_contacts_reported = 2
 
 [node name="RightLegJoint" type="PinJoint2D" parent="."]
 position = Vector2(22, 50)
