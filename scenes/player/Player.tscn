@@ -1,8 +1,8 @@
 [gd_scene load_steps=6 format=3 uid="uid://b7y65ousjcsar"]
 
-[ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
+[ext_resource type="Script" uid="uid://cae7bvds53o2f" path="res://scripts/player/player.gd" id="1_player"]
 [ext_resource type="PackedScene" uid="uid://c3k8nan4p5q6r" path="res://scenes/player/Limb.tscn" id="2_gfjak"]
-[ext_resource type="Script" path="res://scripts/player/head.gd" id="3_head"]
+[ext_resource type="Script" uid="uid://bexsxbo7s5w16" path="res://scripts/player/head.gd" id="3_head"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_torso"]
 size = Vector2(60, 100)

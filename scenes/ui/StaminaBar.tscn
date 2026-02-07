@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bvx8k5n4p2qrs"]
 
-[ext_resource type="Script" path="res://scripts/ui/stamina_bar.gd" id="1_stamina_bar"]
+[ext_resource type="Script" uid="uid://vdd8d3dgjmvs" path="res://scripts/ui/stamina_bar.gd" id="1_stamina_bar"]
 
 [node name="StaminaBar" type="ProgressBar"]
 offset_left = 476.0
