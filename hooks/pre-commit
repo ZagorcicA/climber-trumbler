@@ -1,0 +1,27 @@
+#!/bin/bash
+# Pre-commit hook: Strip Godot UIDs from .tscn and .tres files
+# Prevents machine-specific UID mismatches when collaborating
+#
+# WHY: Godot generates unique IDs per machine. When you commit files
+# with your UIDs, other team members get warnings because their Godot
+# doesn't recognize them. This hook strips UIDs before commit so only
+# clean text paths are shared. Godot regenerates correct local UIDs
+# automatically when it opens the project.
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(tscn|tres)$')
+
+if [ -z "$STAGED_FILES" ]; then
+    exit 0
+fi
+
+for FILE in $STAGED_FILES; do
+    if [ -f "$FILE" ]; then
+        # Remove uid="uid://..." from all lines
+        sed -i.bak -E 's/ uid="uid:\/\/[^"]*"//g' "$FILE"
+        rm -f "${FILE}.bak"
+        git add "$FILE"
+    fi
+done
+
+echo "Pre-commit hook: Stripped Godot UIDs from staged scene files"
+exit 0
