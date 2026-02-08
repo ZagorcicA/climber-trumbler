@@ -11,18 +11,19 @@ Development roadmap for completing the prototype and beyond.
 **Phase 3:** ✓ Hold System - COMPLETE
 **Phase 4:** ✓ Head Tracking - COMPLETE
 **Phase 4.5:** ✓ Refactoring - COMPLETE (consolidated holds, reorganized scenes/docs)
+**Phase 5:** ✓ Stamina System - COMPLETE (drain/regen, position multipliers, hold difficulty, UI bar)
 
-**Overall:** ~80% of core prototype complete (ready for stamina system)
+**Overall:** ~90% of core prototype complete (need win/lose conditions for MVP)
 
 ---
 
-## 🚨 Immediate Priority: Implement Stamina System
+## 🚨 Immediate Priority: Win/Lose Conditions (Phase 6)
 
 **Status:** Ready to start
-**Estimated Time:** 2-4 hours
-**See:** Phase 5 section below
+**Estimated Time:** 1-2 hours
+**See:** Phase 6 section below
 
-**Head tracking is now working! The refactoring included fixes to the head controller.**
+**Stamina system is fully wired: position-based multipliers, hold difficulty drain, forced detach on depletion, StaminaBar UI with color feedback.**
 
 ---
 
@@ -418,9 +419,9 @@ Add challenge:
 - ✓ Limb control
 - ✓ Hold system
 - ✓ One level
-- ⏳ Stamina system
+- ✓ Stamina system
 - ⏳ Win condition
-- ⏳ Basic UI
+- ✓ Basic UI (StaminaBar)
 
 **Not Required:**
 - Head tracking (nice to have)
@@ -468,10 +469,10 @@ Add challenge:
 | M1: Physics | Ragdoll working | 3-4h | ✓ Done |
 | M2: Control | Limb movement | 2-3h | ✓ Done |
 | M3: Holds | Latch system | 2-3h | ✓ Done |
-| M4: Head | Tracking system | 1-3h | ⏳ Blocked |
-| M5: Stamina | Resource management | 2-4h | 🔜 Next |
-| M6: Win/Lose | Complete loop | 1-2h | 🔜 Soon |
-| **MVP COMPLETE** | **Playable prototype** | **11-19h total** | **~75% done** |
+| M4: Head | Tracking system | 1-3h | ✓ Done |
+| M5: Stamina | Resource management | 2-4h | ✓ Done |
+| M6: Win/Lose | Complete loop | 1-2h | 🔜 Next |
+| **MVP COMPLETE** | **Playable prototype** | **11-19h total** | **~90% done** |
 | M7: Polish | Juice & feel | 2-4h | 📝 Later |
 | M8: Levels | Content creation | 2-4h | 📝 Later |
 | M9: Menus | Presentation | 2-3h | 📝 Later |
