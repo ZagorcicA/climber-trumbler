@@ -139,8 +139,8 @@ scripts/
 
 ## Getting Help
 
-- Check `claude.md/CURRENT_ISSUES.md` for known problems
-- Check `claude.md/ARCHITECTURE.md` for system design
+- Check `docs/CURRENT_ISSUES.md` for known problems
+- Check `docs/ARCHITECTURE.md` for system design
 - Ask Claude to investigate if you're stuck
 
 ## Philosophy

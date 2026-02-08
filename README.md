@@ -88,14 +88,14 @@ climber-trumbler/
 │   ├── managers/      # InputManager, StaminaManager (autoloads)
 │   └── ui/            # Stamina bar
 ├── scenes/            # Godot scene files (.tscn)
-├── claude.md/         # Technical documentation
+├── docs/         # Technical documentation
 ├── logs/              # Runtime output (gitignored except .gitkeep)
 └── CLAUDE_CODE_INSTRUCTIONS.md  # Development workflow guide
 ```
 
 ## Documentation
 
-See the `claude.md/` folder for detailed technical docs:
+See the `docs/` folder for detailed technical docs:
 
 - `ARCHITECTURE.md` - System design and data flow
 - `PHYSICS_TUNING_GUIDE.md` - All physics parameters
