@@ -1,7 +1,7 @@
-[gd_scene load_steps=6 format=3 uid="uid://b7y65ousjcsar"]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
-[ext_resource type="PackedScene" uid="uid://c3k8nan4p5q6r" path="res://scenes/player/Limb.tscn" id="2_gfjak"]
+[ext_resource type="PackedScene" path="res://scenes/player/Limb.tscn" id="2_gfjak"]
 [ext_resource type="Script" path="res://scripts/player/head.gd" id="3_head"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_torso"]
@@ -79,6 +79,8 @@ softness = 0.4
 
 [node name="LeftLeg" parent="." instance=ExtResource("2_gfjak")]
 position = Vector2(-22, 90)
+contact_monitor = true
+max_contacts_reported = 2
 
 [node name="LeftLegJoint" type="PinJoint2D" parent="."]
 position = Vector2(-22, 50)
@@ -88,6 +90,8 @@ softness = 0.4
 
 [node name="RightLeg" parent="." instance=ExtResource("2_gfjak")]
 position = Vector2(22, 90)
+contact_monitor = true
+max_contacts_reported = 2
 
 [node name="RightLegJoint" type="PinJoint2D" parent="."]
 position = Vector2(22, 50)

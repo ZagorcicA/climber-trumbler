@@ -9,7 +9,18 @@ This project uses Claude Code for AI-assisted development. This guide explains t
 - **Godot 4.3+** from [godotengine.org](https://godotengine.org/download)
 - **Claude Code** (Anthropic's CLI tool)
 
-### 2. Run Godot with Log Piping
+### 2. Run Project Setup (IMPORTANT - Do This First!)
+
+After cloning, run the setup script to install git hooks and clear UID caches:
+
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+This installs a pre-commit hook that strips machine-specific Godot UIDs from scene files. Without this, your commits will cause warnings for other team members. See `SETUP_GUIDE.md` for details.
+
+### 3. Run Godot with Log Piping
 
 This is the key step - it lets Claude see Godot's output.
 
@@ -28,7 +39,7 @@ godot --path . --editor 2>&1 | Tee-Object -FilePath logs/godot_output.log
 godot --path . --editor 2>&1 | tee logs/godot_output.log
 ```
 
-### 3. Start Claude Code
+### 4. Start Claude Code
 
 In a separate terminal, in the project directory:
 ```bash

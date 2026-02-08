@@ -39,7 +39,7 @@ var warning_emitted: bool = false
 func _ready():
 	print("StaminaManager initialized")
 
-func update_stamina(delta: float, arms_latched: int, legs_latched: int, is_grounded: bool):
+func update_stamina(delta: float, arms_latched: int, legs_latched: int, is_grounded: bool, hold_difficulty_multiplier: float = 1.0):
 	"""
 	Update stamina based on current limb configuration and grounded state.
 	Called every frame by Player.
@@ -49,6 +49,7 @@ func update_stamina(delta: float, arms_latched: int, legs_latched: int, is_groun
 		arms_latched: Number of arms currently attached (0-2)
 		legs_latched: Number of legs currently attached (0-2)
 		is_grounded: Whether player's torso is touching the floor
+		hold_difficulty_multiplier: Average drain multiplier from hold types (easy=1.0, medium=1.5, hard=2.5)
 	"""
 	var total_latched = arms_latched + legs_latched
 
@@ -64,11 +65,11 @@ func update_stamina(delta: float, arms_latched: int, legs_latched: int, is_groun
 		if total_latched > 0:
 			# Latched - check if draining or regenerating based on position
 			if total_latched >= 3:
-				# Resting position - regenerate
+				# Resting position - regenerate (hold difficulty doesn't affect regen)
 				_regenerate_stamina(delta, multiplier)
 			else:
-				# Active climbing - drain
-				_drain_stamina(delta, multiplier)
+				# Active climbing - drain (apply hold difficulty multiplier)
+				_drain_stamina(delta, multiplier * hold_difficulty_multiplier)
 		else:
 			# Free falling - regenerate fast
 			_regenerate_stamina(delta, multiplier)

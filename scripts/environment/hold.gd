@@ -2,6 +2,18 @@ extends StaticBody2D
 
 # Climbing hold that limbs can latch onto
 # Provides visual feedback when a limb is attached
+# Hold difficulty affects stamina drain rate when latched
+
+enum HoldDifficulty {EASY, MEDIUM, HARD}
+
+@export var hold_difficulty: HoldDifficulty = HoldDifficulty.EASY
+
+# Drain multipliers per difficulty - harder holds drain stamina faster
+const DIFFICULTY_DRAIN_MULTIPLIER = {
+	HoldDifficulty.EASY: 1.0,
+	HoldDifficulty.MEDIUM: 1.5,
+	HoldDifficulty.HARD: 2.5,
+}
 
 @onready var attached_indicator = $AttachedIndicator
 
@@ -30,3 +42,8 @@ func _update_visual_state():
 func get_attach_position() -> Vector2:
 	"""Returns the world position where limbs should attach"""
 	return global_position
+
+func get_drain_multiplier() -> float:
+	"""Returns the stamina drain multiplier for this hold's difficulty"""
+	print("Hold difficulty:", hold_difficulty, "Multiplier:", DIFFICULTY_DRAIN_MULTIPLIER.get(hold_difficulty, 1.0))
+	return DIFFICULTY_DRAIN_MULTIPLIER.get(hold_difficulty, 1.0)
