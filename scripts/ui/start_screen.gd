@@ -19,9 +19,6 @@ func _ready():
 	play_button_medium.pressed.connect(_on_play_button_pressed.bind("medium"))
 	play_button_hard.pressed.connect(_on_play_button_pressed.bind("hard"))
 
-	# Give the easy button focus for keyboard/controller navigation
-	play_button_easy.grab_focus()
-
 # Called when the Play button is pressed.
 # Loads the first level scene.
 func _on_play_button_pressed(level: String):
