@@ -76,7 +76,6 @@ func _handle_limb_actions():
 	if InputManager.latch_just_pressed:
 		# Check if player has enough stamina to latch
 		if not StaminaManager.can_latch():
-			print("Not enough stamina to latch!")
 			return
 
 		var nearest_hold = selected.get_nearest_hold()
@@ -159,8 +158,6 @@ func _on_stamina_depleted():
 	Called when stamina reaches 0.
 	Detaches all limbs, causing player to fall.
 	"""
-	print("Stamina depleted! All limbs released!")
-
 	# Detach all latched limbs
 	for limb in limbs:
 		if limb.is_latched:
@@ -175,7 +172,6 @@ func _on_torso_body_entered(body: Node):
 		# Check if body is on layer 2 (environment/floor)
 		if body.collision_layer & 2:  # Bitwise check for layer 2
 			torso_on_ground = true
-			print("[STATE] Player grounded - torso floor contact")
 
 func _on_torso_body_exited(body: Node):
 	"""
@@ -186,14 +182,11 @@ func _on_torso_body_exited(body: Node):
 		# Check if body was on layer 2 (environment/floor)
 		if body.collision_layer & 2:
 			torso_on_ground = false
-			print("[STATE] Player airborne - torso left floor")
 
 func _on_leg_body_entered(body: Node):
 	if body is StaticBody2D and body.collision_layer & 2:
 		legs_on_ground += 1
-		print("[STATE] Leg grounded (legs_on_ground: %d)" % legs_on_ground)
 
 func _on_leg_body_exited(body: Node):
 	if body is StaticBody2D and body.collision_layer & 2:
 		legs_on_ground = max(0, legs_on_ground - 1)
-		print("[STATE] Leg left ground (legs_on_ground: %d)" % legs_on_ground)

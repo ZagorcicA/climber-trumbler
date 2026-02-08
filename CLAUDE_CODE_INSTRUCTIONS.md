@@ -329,36 +329,39 @@ May I proceed?
 ## 📂 Project Context
 
 ### Current Status
-- Phases 1-3: ✅ COMPLETE (ragdoll, limb control, holds)
-- Phase 4: ⚠️ IN PROGRESS (head tracking NOT working)
+- Phases 1-5: ✅ COMPLETE (ragdoll, limb control, holds, head tracking, stamina)
+- Phase 6: 🔜 NEXT (win/lose conditions)
 
-### Current Critical Issue: Head Tracking
+### Current Priority: Win/Lose Conditions (Phase 6)
 
-**Problem:** Head doesn't rotate despite code being called and angular_velocity being set
+**Goal:** Complete the gameplay loop with win trigger at top of wall and lose on stamina depletion.
 
-**Your Task:** 
-1. Read `CURRENT_ISSUES.md` for full details
+**Your Task:**
+1. Read `docs/NEXT_STEPS.md` Phase 6 section for implementation plan
 2. Read `logs/godot_output.log` for current state
-3. Form investigation plan using template above
-4. Get approval, then systematically debug
+3. Implement win trigger, game UI, and level integration
+4. Clean up debug prints after feature is verified working
 
 ### Key Files
 
 **Log file:** `logs/godot_output.log` (your main data source)
 
-**Documentation:**
+**Documentation (in docs/ folder):**
 - `ARCHITECTURE.md` - System details
-- `CURRENT_ISSUES.md` - Known problems with evidence
+- `CURRENT_ISSUES.md` - Known problems (minor only)
 - `PHYSICS_TUNING_GUIDE.md` - All physics parameters
-- `IMPLEMENTATION_LOG.md` - What's been tried
+- `IMPLEMENTATION_LOG.md` - Development history
 - `NEXT_STEPS.md` - Roadmap
 
 **Scripts:**
-- `scripts/player/head.gd` - ⚠️ BROKEN (your focus)
+- `scripts/player/head.gd` - ✅ Working
 - `scripts/player/player.gd` - ✅ Working
 - `scripts/player/limb.gd` - ✅ Working
-- `scripts/environment/hold.gd` - ✅ Working
+- `scripts/environment/hold.gd` - ✅ Working (single Hold.tscn with difficulty export)
 - `scripts/managers/input_manager.gd` - ✅ Working
+- `scripts/managers/stamina_manager.gd` - ✅ Working
+- `scripts/ui/stamina_bar.gd` - ✅ Working
+- `scripts/ui/start_screen.gd` - ✅ Working
 
 ---
 
@@ -380,12 +383,22 @@ Before considering any change complete:
 
 ## 🎯 Your Immediate Next Steps
 
-1. **Read** `logs/godot_output.log` to see current state
-2. **Read** `CURRENT_ISSUES.md` for head tracking problem details
+1. **Read** `docs/NEXT_STEPS.md` Phase 6 section for win/lose implementation plan
+2. **Read** `logs/godot_output.log` to see current state
 3. **Create** an investigation plan using the [INVESTIGATION] template
 4. **Share** your plan with me
 5. **Wait** for my approval
 6. **Proceed** systematically
+7. **Clean up** debug prints after feature is verified working
+
+---
+
+## 🧹 Post-Feature Cleanup
+
+After completing and verifying a feature:
+1. Remove ALL debug print statements from the feature's code
+2. Keep code clean — no leftover `print()` calls in production code
+3. Only leave prints gated behind a debug flag if truly needed for future debugging
 
 ---
 
@@ -435,14 +448,14 @@ Your first action should be:
 
 "I can see: [summarize what logs show]
 
-Now reading CURRENT_ISSUES.md for context..."
+Now reading docs/NEXT_STEPS.md for the roadmap..."
 [read that file]
 
-"Based on the logs and documentation, here's my investigation plan:
+"Based on the logs and documentation, here's my plan:
 
 [Use INVESTIGATION template]
 
 Does this approach make sense? Should I proceed?"
 ```
 
-Let's solve this head tracking issue systematically! 🎯
+Next up: Win/Lose conditions to complete the MVP! 🎯

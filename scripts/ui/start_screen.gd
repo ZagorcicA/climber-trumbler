@@ -25,7 +25,6 @@ func _ready():
 # Called when the Play button is pressed.
 # Loads the first level scene.
 func _on_play_button_pressed(level: String):
-	print("Play button pressed, loading level: %s" % level)
 	match level:
 		"easy":
 			get_tree().change_scene_to_file(LEVEL_EASY_PATH)

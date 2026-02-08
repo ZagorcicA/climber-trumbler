@@ -55,5 +55,4 @@ func get_attach_position() -> Vector2:
 
 func get_drain_multiplier() -> float:
 	"""Returns the stamina drain multiplier for this hold's difficulty"""
-	print("Hold difficulty:", hold_difficulty, "Multiplier:", DIFFICULTY_DRAIN_MULTIPLIER.get(hold_difficulty, 1.0))
 	return DIFFICULTY_DRAIN_MULTIPLIER.get(hold_difficulty, 1.0)
