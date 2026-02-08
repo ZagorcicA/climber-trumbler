@@ -15,13 +15,23 @@ const DIFFICULTY_DRAIN_MULTIPLIER = {
 	HoldDifficulty.HARD: 2.5,
 }
 
+# Visual colors per difficulty
+const DIFFICULTY_COLORS = {
+	HoldDifficulty.EASY: Color(0.259113, 0.769583, 0.269687, 1),
+	HoldDifficulty.MEDIUM: Color(0.284795, 0.297749, 0.878261, 1),
+	HoldDifficulty.HARD: Color(0.597306, 0, 0.0655421, 1),
+}
+
 @onready var attached_indicator = $AttachedIndicator
+@onready var hold_visual = $HoldVisual
 
 var attached_limbs: Array = []
 
 func _ready():
 	# Add to holds group so limbs can detect it
 	add_to_group("holds")
+	# Set hold color based on difficulty
+	hold_visual.color = DIFFICULTY_COLORS.get(hold_difficulty, DIFFICULTY_COLORS[HoldDifficulty.EASY])
 
 func attach_limb(limb):
 	"""Called when a limb latches to this hold"""
