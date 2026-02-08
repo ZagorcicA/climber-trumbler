@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://scripts/environment/level.gd" id="2_level"]
-[ext_resource type="PackedScene" path="res://scenes/environment/KurciZaDrzanje/HoldHard.tscn" id="3_x4u4f"]
+[ext_resource type="PackedScene" path="res://scenes/environment/holds/HoldHard.tscn" id="3_x4u4f"]
 [ext_resource type="PackedScene" path="res://scenes/ui/StaminaBar.tscn" id="4_stamina"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]

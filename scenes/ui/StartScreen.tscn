@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://78o1fxa7bk7x"]
 
-[ext_resource type="Script" path="res://scripts/ui/start_screen.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://duvddbjnxndwu" path="res://scripts/ui/start_screen.gd" id="1_script"]
 
-[node name="StartScreen" type="Control"]
+[node name="StartScreen" type="Control" unique_id=1390160618]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=1494558020]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,8 +20,8 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.15, 0.18, 0.25, 1)
 
-[node name="Title" type="Label" parent="."]
-layout_mode = 2
+[node name="Title" type="Label" parent="." unique_id=1068171514]
+layout_mode = 0
 offset_left = 371.0
 offset_top = 1.0
 offset_right = 771.0
@@ -33,8 +33,8 @@ TRUMBLER"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Subtitle" type="Label" parent="."]
-layout_mode = 2
+[node name="Subtitle" type="Label" parent="." unique_id=865319737]
+layout_mode = 0
 offset_left = 371.0
 offset_top = 218.0
 offset_right = 771.0
@@ -44,59 +44,58 @@ theme_override_font_sizes/font_size = 18
 text = "A ragdoll climbing adventure"
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="."]
+[node name="Spacer" type="Control" parent="." unique_id=1338843831]
 custom_minimum_size = Vector2(0, 20)
-layout_mode = 2
 anchors_preset = 0
 offset_left = 371.0
 offset_top = 258.0
 offset_right = 771.0
 offset_bottom = 278.0
 
-[node name="PlayButtonEasy" type="Button" parent="."]
+[node name="PlayButtonEasy" type="Button" parent="." unique_id=1278417357]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 60)
-layout_mode = 2
+layout_mode = 0
 offset_left = 197.0
 offset_top = 298.0
 offset_right = 397.0
 offset_bottom = 358.0
 size_flags_horizontal = 4
-theme_override_colors/font_hover_color = Color(0.1, 0.1, 0.15, 1)
 theme_override_colors/font_color = Color(0.1, 0.1, 0.15, 1)
+theme_override_colors/font_hover_color = Color(0.1, 0.1, 0.15, 1)
 theme_override_font_sizes/font_size = 28
 text = "Easy level"
 
-[node name="PlayButtonMedium" type="Button" parent="."]
+[node name="PlayButtonMedium" type="Button" parent="." unique_id=1547768268]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 60)
-layout_mode = 2
+layout_mode = 0
 offset_left = 480.0
 offset_top = 301.0
 offset_right = 680.0
 offset_bottom = 361.0
 size_flags_horizontal = 4
-theme_override_colors/font_hover_color = Color(0.1, 0.1, 0.15, 1)
 theme_override_colors/font_color = Color(0.1, 0.1, 0.15, 1)
+theme_override_colors/font_hover_color = Color(0.1, 0.1, 0.15, 1)
 theme_override_font_sizes/font_size = 28
 text = "Normal level"
 
-[node name="PlayButtonHard" type="Button" parent="."]
+[node name="PlayButtonHard" type="Button" parent="." unique_id=1458086970]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 60)
-layout_mode = 2
+layout_mode = 0
 offset_left = 752.0
 offset_top = 300.0
 offset_right = 952.0
 offset_bottom = 360.0
 size_flags_horizontal = 4
-theme_override_colors/font_hover_color = Color(0.1, 0.1, 0.15, 1)
 theme_override_colors/font_color = Color(0.1, 0.1, 0.15, 1)
+theme_override_colors/font_hover_color = Color(0.1, 0.1, 0.15, 1)
 theme_override_font_sizes/font_size = 28
 text = "Hard level"
 
-[node name="Controls" type="Label" parent="."]
-layout_mode = 2
+[node name="Controls" type="Label" parent="." unique_id=965363364]
+layout_mode = 0
 offset_left = 371.0
 offset_top = 600.0
 offset_right = 771.0
