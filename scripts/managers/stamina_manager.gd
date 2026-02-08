@@ -37,7 +37,7 @@ signal stamina_warning()  # Emitted at 30% threshold
 var warning_emitted: bool = false
 
 func _ready():
-	print("StaminaManager initialized")
+	pass
 
 func update_stamina(delta: float, arms_latched: int, legs_latched: int, is_grounded: bool, hold_difficulty_multiplier: float = 1.0):
 	"""
@@ -159,4 +159,3 @@ func reset():
 	current_stamina = MAX_STAMINA
 	current_position_difficulty = "stable"
 	warning_emitted = false
-	print("Stamina reset to full")

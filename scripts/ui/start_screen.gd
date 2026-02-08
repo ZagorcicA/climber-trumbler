@@ -8,9 +8,9 @@ extends Control
 @onready var play_button_hard = %PlayButtonHard
 
 # Level scene paths
-const LEVEL_EASY_PATH = "res://scenes/environment/levels/LevelEasy.tscn"
-const LEVEL_MEDIUM_PATH = "res://scenes/environment/levels/LevelMedium.tscn"
-const LEVEL_HARD_PATH = "res://scenes/environment/levels/LevelHard.tscn"
+const LEVEL_EASY_PATH = "res://scenes/levels/LevelEasy.tscn"
+const LEVEL_MEDIUM_PATH = "res://scenes/levels/LevelMedium.tscn"
+const LEVEL_HARD_PATH = "res://scenes/levels/LevelHard.tscn"
 
 # Initializes the start screen and sets up button connections.
 func _ready():
@@ -25,7 +25,6 @@ func _ready():
 # Called when the Play button is pressed.
 # Loads the first level scene.
 func _on_play_button_pressed(level: String):
-	print("Play button pressed, loading level: %s" % level)
 	match level:
 		"easy":
 			get_tree().change_scene_to_file(LEVEL_EASY_PATH)

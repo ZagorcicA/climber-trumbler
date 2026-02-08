@@ -83,7 +83,6 @@ func latch_to_hold(hold):
 	hold.attach_limb(self)
 
 	is_latched = true
-	print("Limb latched to hold at ", hold.global_position)
 	return true
 
 func detach_from_hold():
@@ -101,18 +100,15 @@ func detach_from_hold():
 		latch_joint = null
 
 	is_latched = false
-	print("Limb detached from hold")
 
 func _on_hold_detected(area):
 	# Area entered grab zone
 	if area.is_in_group("holds"):
 		var hold = area.get_parent()
 		nearby_holds.append(hold)
-		print("Hold detected! Nearby holds count: ", nearby_holds.size())
 
 func _on_hold_lost(area):
 	# Area left grab zone
 	if area.is_in_group("holds"):
 		var hold = area.get_parent()
 		nearby_holds.erase(hold)
-		print("Hold lost! Nearby holds count: ", nearby_holds.size())

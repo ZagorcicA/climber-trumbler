@@ -69,4 +69,3 @@ func _update_color(stamina_value: float, difficulty: String):
 func _on_stamina_depleted():
 	"""Visual feedback when stamina is fully depleted."""
 	modulate = COLOR_CRITICAL
-	print("STAMINA DEPLETED!")

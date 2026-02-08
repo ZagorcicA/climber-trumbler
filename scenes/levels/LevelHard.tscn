@@ -2,13 +2,13 @@
 
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://scripts/environment/level.gd" id="2_level"]
-[ext_resource type="PackedScene" path="res://scenes/environment/KurciZaDrzanje/HoldEasy.tscn" id="3_x4u4f"]
+[ext_resource type="PackedScene" path="res://scenes/environment/Hold.tscn" id="3_x4u4f"]
 [ext_resource type="PackedScene" path="res://scenes/ui/StaminaBar.tscn" id="4_stamina"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
 size = Vector2(2000, 100)
 
-[node name="LevelEasy" type="Node2D"]
+[node name="LevelHard" type="Node2D"]
 script = ExtResource("2_level")
 
 [node name="Floor" type="StaticBody2D" parent="."]
@@ -37,16 +37,21 @@ zoom = Vector2(0.8, 0.8)
 [node name="StaminaBar" parent="UI" instance=ExtResource("4_stamina")]
 
 [node name="Hold1" parent="." instance=ExtResource("3_x4u4f")]
-position = Vector2(666, 473)
+position = Vector2(707, 499)
+hold_difficulty = 2
 
 [node name="Hold2" parent="." instance=ExtResource("3_x4u4f")]
-position = Vector2(477, 521)
+position = Vector2(489, 413)
+hold_difficulty = 2
 
 [node name="Hold3" parent="." instance=ExtResource("3_x4u4f")]
-position = Vector2(630, 308)
+position = Vector2(743, 264)
+hold_difficulty = 2
 
 [node name="Hold4" parent="." instance=ExtResource("3_x4u4f")]
-position = Vector2(386, 256)
+position = Vector2(492, 222)
+hold_difficulty = 2
 
 [node name="Hold5" parent="." instance=ExtResource("3_x4u4f")]
-position = Vector2(535, 101)
+position = Vector2(644, 138)
+hold_difficulty = 2
