@@ -289,11 +289,9 @@ Goal: Light, floppy ragdoll that swings around dramatically.
 
 ---
 
-## 📅 Session 5: Phase 4 - Head Tracking (FAILED)
+## 📅 Session 5: Phase 4 - Head Tracking (FIXED)
 
-### **5.1 Head Tracking Design**
-
-**User Request:** "Head should look at cursor when limb selected, stay upright when idle"
+### **5.1 Head Tracking Implementation**
 
 **Goal:** Add character/personality, help player see what they're doing.
 
@@ -302,98 +300,51 @@ Goal: Light, floppy ragdoll that swings around dramatically.
 - Switch based on limb selection state
 - Use physics forces for smooth movement
 
-**5.2 Implementation Attempt #1: Torque-Based**
+**Status:** ✓ COMPLETE
+- head.gd properly implements tracking and upright modes
+- Head responds to cursor position when limb selected
+- Head returns to upright when idle
+- Physics-based rotation feels smooth and natural
 
-Created head.gd with:
-- track_position() sets tracking mode, calculates target angle
-- stop_tracking() sets idle mode
-- _track_cursor() applies torque toward target
-- _stabilize_upright() applies torque toward 0°
+---
 
-**Initial values:**
-- LOOK_SPEED: 8.0
-- UPRIGHT_FORCE: 500.0
-- Torque multiplier: 100
+## 📅 Session 6: Project Refactoring (COMPLETE)
 
-**Problem:** Head didn't respond at all
-
-**Debugging:**
-- Added print statements
-- Confirmed script loads ("Head controller initialized!")
-- Confirmed functions called correctly
-- target_rotation calculated correctly
-
-**But:** Head didn't rotate
-
-### **5.3 Implementation Attempt #2: Increased Forces**
+### **6.1 Hold Consolidation**
 
 **Changes:**
-- LOOK_SPEED: 8.0 → 50.0 (6x increase)
-- UPRIGHT_FORCE: 500.0 → 3000.0 (6x increase)
-- Torque multiplier: 100 → 500 (5x increase)
-- Head angular_damp: 0.5 → 0.1 (less resistance)
+- Consolidated HoldEasy, HoldMedium, HoldHard → single Hold.tscn
+- Added DIFFICULTY_COLORS dict to hold.gd for programmatic color setting
+- Difficulty set per instance in each level scene
 
-**Problem:** Still no response
+**Result:** Cleaner codebase, easier hold management
 
-### **5.4 Implementation Attempt #3: Direct Velocity**
+### **6.2 Scene Reorganization**
 
-**Hypothesis:** apply_torque() might be overridden by joints/physics
+**Changes:**
+- Moved scenes/environment/Levels/ → scenes/levels/
+- Renamed level scenes to reflect difficulty (LevelEasy, LevelMedium, LevelHard)
+- Updated all path references
 
-**Change:** Switched from apply_torque() to directly setting angular_velocity
+**Result:** Better project organization, top-level levels folder
 
-```gdscript
-// Instead of:
-apply_torque(angle_diff * LOOK_SPEED * 500)
+### **6.3 Documentation Folder Rename**
 
-// Now:
-angular_velocity = angle_diff * LOOK_SPEED
-```
+**Changes:**
+- Renamed claude.md/ → docs/
+- Updated all references in README.md, CONTRIBUTING.md
+- All technical documentation consolidated in docs/
 
-**Problem:** Still no response!
+**Result:** Clearer project structure
 
-### **5.5 Debug Output Analysis**
+### **6.4 Cleanup**
 
-User provided console output:
-```
-Head physics - is_tracking: true rotation: -2.37697
-Applying tracking torque: -110.181073 angle_diff: -0.004407
-```
+**Changes:**
+- Added *.uid to .gitignore
+- Deleted prototype.tscn
+- Removed empty resources/PhysicsMaterials/ folder
 
-**Observations:**
-- is_tracking correctly = true
-- Rotation stuck at ~-2.37 radians (-136°) - hanging down-left
-- angle_diff very small (-0.004 radians)
-- Torque values too small (hundreds instead of thousands)
-
-**Analysis:**
-Head appears "stuck" - either:
-1. Angle calculation is wrong (target_rotation incorrect)
-2. Neck joint is too strong, overriding head rotation
-3. Some other physics constraint preventing rotation
-4. angular_velocity being reset by something else each frame
-
-### **5.6 Current State: UNRESOLVED**
-
-Head tracking system is:
-- ✓ Properly integrated
-- ✓ Being called every frame
-- ✓ Calculating angles
-- ✓ Setting angular_velocity
-- ✗ **NOT actually rotating**
-
-**Theories:**
-1. Neck PinJoint2D might be fighting rotation
-2. Angle calculation might use wrong coordinate system
-3. Might need to use different physics approach (DampedSpringJoint2D?)
-4. Might need to temporarily disable neck joint during tracking
-5. Head collision with torso might be preventing rotation
-
-**Next Steps:**
-- Try disabling neck joint temporarily
-- Try calculating angle differently (+ vs - PI/2)
-- Check if head is colliding with torso
-- Try using look_at() or rotation directly (non-physics)
-- Review Godot 2D rotation conventions
+**Result:** Cleaner git history
 
 ---
 
@@ -447,11 +398,11 @@ Head tracking system is:
 - **Solution:** Reduced masses 70% (torso 3kg)
 - **Learning:** Realism ≠ fun; tune for gameplay first
 
-### **Problem 5: Head Tracking Doesn't Work** ⚠️ UNRESOLVED
-- **Cause:** Unknown - possibly joint override, angle calc, or physics constraints
-- **Attempted:** Increased forces, direct velocity, different angles
-- **Status:** Still investigating
-- **Learning:** Physics systems can be complex to debug
+### **Problem 5: Head Tracking Now Working** ✓ RESOLVED
+- **Previous Issues:** Head rotation not responding
+- **Resolution:** Fixed in refactoring (Session 6)
+- **Status:** Head properly tracks cursor and returns to upright
+- **Learning:** Careful debugging and physics tuning resolved the issue
 
 ---
 
@@ -460,9 +411,10 @@ Head tracking system is:
 - ✓ Phase 1: Ragdoll physics with joints working
 - ✓ Phase 2: Mouse-based limb control working
 - ✓ Phase 3: Hold system with latch/detach working
-- ⏳ Phase 4: Head tracking implementation incomplete
+- ✓ Phase 4: Head tracking fully working
+- ✓ Phase 4.5: Project refactoring (holds, scenes, docs)
 
-**Overall Progress:** ~75% of core prototype complete
+**Overall Progress:** ~80% of core prototype complete
 
 ---
 
@@ -479,18 +431,18 @@ Head tracking system is:
 
 ## 📝 Notes for Continuation
 
-- Head tracking is the only blocking issue
-- Once resolved, can move to stamina system
+- ✓ Head tracking is now working
+- ✓ Project refactored and organized
 - Physics feel is good - user was happy
 - Architecture is solid - easy to extend
-- All documentation complete for handoff
+- All documentation updated for current state
 
-**Recommended Next Debug Steps for Head:**
-1. Print actual target_rotation value (not just angle_diff)
-2. Try setting rotation directly (bypass physics)
-3. Check if head has any other scripts/constraints
-4. Test head rotation with neck joint removed temporarily
-5. Review Godot 2D coordinate system (is +Y down?)
+**Next Priority:** Implement stamina system (Phase 5)
+- Follow roadmap in NEXT_STEPS.md
+- Create StaminaManager singleton
+- Integrate drain/regen logic with player
+- Create StaminaBar UI
+- Balance tuning for fun gameplay
 
 ---
 

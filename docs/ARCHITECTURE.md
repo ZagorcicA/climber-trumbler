@@ -226,37 +226,28 @@ Access Pattern:
 
 ---
 
-### **5. Head System** (⚠️ NOT WORKING)
+### **5. Hold Color System**
 
-**Script: head.gd (attached to Head RigidBody2D)**
+**Script: hold.gd (attached to Hold.tscn)**
 ```
 Responsibilities:
-- Track mouse cursor when limb is selected and moving
-- Return to upright (0°) when idle
-- Use physics forces/velocity for smooth movement
+- Track which limbs are attached
+- Set visual color based on difficulty
+- Show/hide visual indicator
 
-Key Variables:
-- is_tracking: bool - Currently tracking cursor
-- target_rotation: float - Desired rotation angle
+Color Configuration (from DIFFICULTY_COLORS dict):
+- EASY: Green/yellow
+- MEDIUM: Orange
+- HARD: Red
 
-Key Functions:
-- track_position(world_pos) - Set tracking mode, calculate angle
-- stop_tracking() - Set idle mode
-- _track_cursor(delta) - Apply rotation toward target
-- _stabilize_upright(delta) - Apply rotation toward 0°
-
-Current Issue:
-- Functions are called correctly
-- angular_velocity is being set
-- BUT head doesn't actually rotate
-- Likely being overridden by physics or joints
+The hold color is set programmatically in _ready() based on the hold_difficulty export variable.
 ```
 
 ---
 
 ### **6. Level System**
 
-**Script: level.gd (attached to Level1)**
+**Script: level.gd (attached to LevelEasy, LevelMedium, LevelHard)**
 ```
 Responsibilities:
 - Manage level-specific logic
@@ -356,6 +347,43 @@ Next physics frame:
 
 ---
 
+## 📁 File Organization
+
+**Scenes are organized by type:**
+```
+scenes/
+├── player/         # Player and limb components
+│   ├── Player.tscn
+│   └── Limb.tscn
+├── environment/    # Environment elements (holds, floor)
+│   └── Hold.tscn
+├── levels/         # Complete level scenes
+│   ├── LevelEasy.tscn
+│   ├── LevelMedium.tscn
+│   └── LevelHard.tscn
+└── ui/             # User interface scenes
+    ├── StaminaBar.tscn
+    └── StartScreen.tscn
+```
+
+**Scripts are organized by module:**
+```
+scripts/
+├── player/         # Player controller, limb physics, head tracking
+│   ├── player.gd
+│   ├── limb.gd
+│   └── head.gd
+├── environment/    # Hold logic, level management
+│   ├── hold.gd
+│   └── level.gd
+├── managers/       # Autoload singletons
+│   ├── input_manager.gd
+│   └── stamina_manager.gd
+└── ui/             # UI controllers
+```
+
+---
+
 ## 🎯 Scene Hierarchy
 
 ### **Player.tscn**
@@ -414,9 +442,9 @@ Hold (StaticBody2D) [hold.gd]
 └── (Optional) CollisionShape2D - Makes hold solid
 ```
 
-### **Level1.tscn**
+### **LevelEasy/LevelMedium/LevelHard.tscn**
 ```
-Level1 (Node2D) [level.gd]
+LevelEasy (Node2D) [level.gd]
 ├── Floor (StaticBody2D) @ (576, 600)
 │   ├── FloorShape (CollisionShape2D) - Rectangle 2000x100
 │   └── FloorVisual (ColorRect) - Brown

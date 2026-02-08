@@ -3,6 +3,9 @@
 /android/
 /ios/
 
+# Godot UID files (machine-specific, cause warnings across machines)
+*.uid
+
 # OS-specific
 .DS_Store
 Thumbs.db

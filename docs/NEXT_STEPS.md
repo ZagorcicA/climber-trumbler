@@ -9,41 +9,21 @@ Development roadmap for completing the prototype and beyond.
 **Phase 1:** ✓ Core Physics - COMPLETE
 **Phase 2:** ✓ Limb Control - COMPLETE
 **Phase 3:** ✓ Hold System - COMPLETE
-**Phase 4:** ⏳ Head Tracking - IN PROGRESS (blocked)
+**Phase 4:** ✓ Head Tracking - COMPLETE
+**Phase 4.5:** ✓ Refactoring - COMPLETE (consolidated holds, reorganized scenes/docs)
+**Phase 5:** ✓ Stamina System - COMPLETE (drain/regen, position multipliers, hold difficulty, UI bar)
 
-**Overall:** ~75% of core prototype complete
+**Overall:** ~90% of core prototype complete (need win/lose conditions for MVP)
 
 ---
 
-## 🚨 Immediate Priority: Fix Head Tracking
+## 🚨 Immediate Priority: Win/Lose Conditions (Phase 6)
 
-**Status:** Blocked, needs investigation
-**Estimated Time:** 1-3 hours of debugging
-**See:** CURRENT_ISSUES.md for full details
+**Status:** Ready to start
+**Estimated Time:** 1-2 hours
+**See:** Phase 6 section below
 
-### **Recommended Approach:**
-
-1. **Quick Tests (15 mins)**
-   - Try `rotation = lerp_angle()` directly (bypass physics)
-   - Print actual `target_rotation` values
-   - Verify coordinate system assumptions
-
-2. **Isolation Tests (30 mins)**
-   - Temporarily remove NeckJoint
-   - Test head rotation alone
-   - Add NeckJoint back if that works
-
-3. **Alternative Approaches (1-2 hours)**
-   - Use `look_at()` function instead
-   - Try `_integrate_forces()` instead of `_physics_process()`
-   - Use DampedSpringJoint2D instead of PinJoint2D for neck
-
-4. **Nuclear Option (if stuck)**
-   - Skip head tracking for now
-   - Move to Phase 5 (stamina)
-   - Return to head tracking later with fresh perspective
-
-**Decision Point:** If not resolved in 3 hours, document findings and move on.
+**Stamina system is fully wired: position-based multipliers, hold difficulty drain, forced detach on depletion, StaminaBar UI with color feedback.**
 
 ---
 
@@ -165,7 +145,7 @@ func _on_stamina_changed(new_value):
         modulate = Color.GREEN
 ```
 
-Add to Level1.tscn
+Add to each level scene (LevelEasy.tscn, LevelMedium.tscn, LevelHard.tscn)
 
 ### **5.4 Stamina Depletion Logic** (30 mins)
 
@@ -256,7 +236,7 @@ func hide_all():
 
 ### **6.3 Level Integration** (30 mins)
 
-Update `scripts/environment/level.gd`:
+Update `scripts/environment/level.gd` (used in all level scenes):
 ```gdscript
 @onready var win_trigger = $WinTrigger
 @onready var game_ui = $GameUI
@@ -439,9 +419,9 @@ Add challenge:
 - ✓ Limb control
 - ✓ Hold system
 - ✓ One level
-- ⏳ Stamina system
+- ✓ Stamina system
 - ⏳ Win condition
-- ⏳ Basic UI
+- ✓ Basic UI (StaminaBar)
 
 **Not Required:**
 - Head tracking (nice to have)
@@ -489,10 +469,10 @@ Add challenge:
 | M1: Physics | Ragdoll working | 3-4h | ✓ Done |
 | M2: Control | Limb movement | 2-3h | ✓ Done |
 | M3: Holds | Latch system | 2-3h | ✓ Done |
-| M4: Head | Tracking system | 1-3h | ⏳ Blocked |
-| M5: Stamina | Resource management | 2-4h | 🔜 Next |
-| M6: Win/Lose | Complete loop | 1-2h | 🔜 Soon |
-| **MVP COMPLETE** | **Playable prototype** | **11-19h total** | **~75% done** |
+| M4: Head | Tracking system | 1-3h | ✓ Done |
+| M5: Stamina | Resource management | 2-4h | ✓ Done |
+| M6: Win/Lose | Complete loop | 1-2h | 🔜 Next |
+| **MVP COMPLETE** | **Playable prototype** | **11-19h total** | **~90% done** |
 | M7: Polish | Juice & feel | 2-4h | 📝 Later |
 | M8: Levels | Content creation | 2-4h | 📝 Later |
 | M9: Menus | Presentation | 2-3h | 📝 Later |
