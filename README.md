@@ -82,13 +82,17 @@ When stamina hits 0, all limbs detach and you fall!
 
 ```
 climber-trumbler/
-├── scripts/           # GDScript source files
-│   ├── player/        # Player, limb, head controllers
-│   ├── environment/   # Hold, level logic
-│   ├── managers/      # InputManager, StaminaManager (autoloads)
-│   └── ui/            # Stamina bar
-├── scenes/            # Godot scene files (.tscn)
-├── docs/         # Technical documentation
+├── scenes/
+│   ├── player/        # Player.tscn, Limb.tscn
+│   ├── environment/   # Hold.tscn
+│   ├── levels/        # LevelEasy.tscn, LevelMedium.tscn, LevelHard.tscn
+│   └── ui/            # StaminaBar.tscn, StartScreen.tscn
+├── scripts/
+│   ├── player/        # player.gd, limb.gd, head.gd
+│   ├── environment/   # hold.gd, level.gd
+│   ├── managers/      # input_manager.gd, stamina_manager.gd (autoloads)
+│   └── ui/            # UI controllers
+├── docs/              # Technical documentation (ARCHITECTURE.md, etc.)
 ├── logs/              # Runtime output (gitignored except .gitkeep)
 └── CLAUDE_CODE_INSTRUCTIONS.md  # Development workflow guide
 ```

@@ -50,12 +50,10 @@
 - Visual feedback (green glow when attached)
 - Multiple holds placed in test level
 
-### **Phase 4: Head Tracking** ⚠️ IN PROGRESS (NOT WORKING)
-- Head controller script created
-- Should track cursor when limb selected
-- Should stay upright when idle
-- **Current Issue:** Head doesn't respond despite code being called
-- See CURRENT_ISSUES.md for details
+### **Phase 4: Head Tracking** ✓ COMPLETE
+- Head controller script created and working
+- Tracks cursor when limb selected
+- Stays upright when idle
 
 ---
 
@@ -68,30 +66,32 @@ climber--trumbler/
 │   │   ├── Player.tscn          # Main player with torso, head, 4 limbs
 │   │   └── Limb.tscn            # Reusable limb component
 │   ├── environment/
-│   │   ├── Hold.tscn            # Climbing hold
-│   │   └── Level1.tscn          # Test level with floor + holds
+│   │   └── Hold.tscn            # Climbing hold (difficulty set per instance)
+│   ├── levels/
+│   │   ├── LevelEasy.tscn       # Easy level with floor + holds
+│   │   ├── LevelMedium.tscn     # Medium difficulty level
+│   │   └── LevelHard.tscn       # Hard difficulty level
 │   └── ui/
-│       ├── StaminaBar.tscn      # (Not yet created)
-│       └── GameUI.tscn          # (Not yet created)
+│       ├── StaminaBar.tscn      # Stamina indicator UI
+│       └── StartScreen.tscn     # Main menu
 │
 ├── scripts/
 │   ├── player/
 │   │   ├── player.gd            # Player controller, limb coordination
 │   │   ├── limb.gd              # Individual limb physics & control
-│   │   └── head.gd              # Head tracking (not working)
+│   │   └── head.gd              # Head tracking
 │   ├── environment/
-│   │   ├── hold.gd              # Hold attachment logic
+│   │   ├── hold.gd              # Hold attachment logic with difficulty colors
 │   │   └── level.gd             # Level management, restart
 │   ├── managers/
-│   │   └── input_manager.gd    # Singleton for input (SSOT)
-│   └── ui/                      # (Empty - not yet implemented)
+│   │   ├── input_manager.gd     # Singleton for input (SSOT)
+│   │   └── stamina_manager.gd   # Singleton for stamina state
+│   └── ui/                      # UI controllers
 │
-├── resources/
-│   └── PhysicsMaterials/        # (Empty)
-│
+├── docs/                        # Technical documentation
 ├── design_document.txt          # Original game design doc
 ├── project.godot                # Godot project config
-└── (Documentation files)        # This and other .md files
+└── (Other documentation files)  # README.md, CONTRIBUTING.md, etc.
 ```
 
 ---
@@ -179,18 +179,7 @@ climber--trumbler/
 
 ## 🚧 Known Issues
 
-### **Critical: Head Tracking Not Working**
-- Head controller script loads and functions are called
-- Debug output confirms tracking mode is active
-- Angular velocity is being set
-- BUT: Head doesn't rotate or respond at all
-- Suspected issues:
-  - Neck joint may be overriding head rotation
-  - Physics constraints too strong
-  - Angle calculation might be wrong
-  - Need to investigate if `angular_velocity` setting is correct approach
-
-See CURRENT_ISSUES.md for detailed debug output and attempted solutions.
+None critical at this time. Head tracking is working. Stamina and win/lose systems need implementation.
 
 ---
 

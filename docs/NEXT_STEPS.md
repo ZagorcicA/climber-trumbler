@@ -9,41 +9,20 @@ Development roadmap for completing the prototype and beyond.
 **Phase 1:** ✓ Core Physics - COMPLETE
 **Phase 2:** ✓ Limb Control - COMPLETE
 **Phase 3:** ✓ Hold System - COMPLETE
-**Phase 4:** ⏳ Head Tracking - IN PROGRESS (blocked)
+**Phase 4:** ✓ Head Tracking - COMPLETE
+**Phase 4.5:** ✓ Refactoring - COMPLETE (consolidated holds, reorganized scenes/docs)
 
-**Overall:** ~75% of core prototype complete
+**Overall:** ~80% of core prototype complete (ready for stamina system)
 
 ---
 
-## 🚨 Immediate Priority: Fix Head Tracking
+## 🚨 Immediate Priority: Implement Stamina System
 
-**Status:** Blocked, needs investigation
-**Estimated Time:** 1-3 hours of debugging
-**See:** CURRENT_ISSUES.md for full details
+**Status:** Ready to start
+**Estimated Time:** 2-4 hours
+**See:** Phase 5 section below
 
-### **Recommended Approach:**
-
-1. **Quick Tests (15 mins)**
-   - Try `rotation = lerp_angle()` directly (bypass physics)
-   - Print actual `target_rotation` values
-   - Verify coordinate system assumptions
-
-2. **Isolation Tests (30 mins)**
-   - Temporarily remove NeckJoint
-   - Test head rotation alone
-   - Add NeckJoint back if that works
-
-3. **Alternative Approaches (1-2 hours)**
-   - Use `look_at()` function instead
-   - Try `_integrate_forces()` instead of `_physics_process()`
-   - Use DampedSpringJoint2D instead of PinJoint2D for neck
-
-4. **Nuclear Option (if stuck)**
-   - Skip head tracking for now
-   - Move to Phase 5 (stamina)
-   - Return to head tracking later with fresh perspective
-
-**Decision Point:** If not resolved in 3 hours, document findings and move on.
+**Head tracking is now working! The refactoring included fixes to the head controller.**
 
 ---
 
@@ -165,7 +144,7 @@ func _on_stamina_changed(new_value):
         modulate = Color.GREEN
 ```
 
-Add to Level1.tscn
+Add to each level scene (LevelEasy.tscn, LevelMedium.tscn, LevelHard.tscn)
 
 ### **5.4 Stamina Depletion Logic** (30 mins)
 
@@ -256,7 +235,7 @@ func hide_all():
 
 ### **6.3 Level Integration** (30 mins)
 
-Update `scripts/environment/level.gd`:
+Update `scripts/environment/level.gd` (used in all level scenes):
 ```gdscript
 @onready var win_trigger = $WinTrigger
 @onready var game_ui = $GameUI

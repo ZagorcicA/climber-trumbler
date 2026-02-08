@@ -93,10 +93,16 @@ See `CLAUDE_CODE_INSTRUCTIONS.md` for the full investigation template.
 ### File Organization
 
 ```
+scenes/
+├── player/      # Player.tscn, Limb.tscn
+├── environment/ # Hold.tscn
+├── levels/      # Level scenes (LevelEasy, LevelMedium, LevelHard)
+└── ui/          # UI scenes (StaminaBar, StartScreen)
+
 scripts/
-├── player/      # Player-related scripts
-├── environment/ # Level, holds, obstacles
-├── managers/    # Autoload singletons
+├── player/      # Player, limb, head controllers
+├── environment/ # Hold, level management
+├── managers/    # Autoload singletons (InputManager, StaminaManager)
 └── ui/          # UI controllers
 ```
 
