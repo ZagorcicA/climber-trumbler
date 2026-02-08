@@ -8,9 +8,9 @@ extends Control
 @onready var play_button_hard = %PlayButtonHard
 
 # Level scene paths
-const LEVEL_EASY_PATH = "res://scenes/environment/levels/LevelEasy.tscn"
-const LEVEL_MEDIUM_PATH = "res://scenes/environment/levels/LevelMedium.tscn"
-const LEVEL_HARD_PATH = "res://scenes/environment/levels/LevelHard.tscn"
+const LEVEL_EASY_PATH = "res://scenes/levels/LevelEasy.tscn"
+const LEVEL_MEDIUM_PATH = "res://scenes/levels/LevelMedium.tscn"
+const LEVEL_HARD_PATH = "res://scenes/levels/LevelHard.tscn"
 
 # Initializes the start screen and sets up button connections.
 func _ready():
