@@ -62,8 +62,9 @@ offset_top = 298.0
 offset_right = 397.0
 offset_bottom = 358.0
 size_flags_horizontal = 4
-theme_override_colors/font_hover_color = Color(0.1, 0.1, 0.15, 1)
-theme_override_colors/font_color = Color(0.1, 0.1, 0.15, 1)
+focus_mode = 0
+theme_override_colors/font_hover_color = Color(0.986779, 0.959376, 0.964686, 1)
+theme_override_colors/font_color = Color(0.694884, 0.697829, 0.804447, 1)
 theme_override_font_sizes/font_size = 28
 text = "Easy level"
 
@@ -76,8 +77,9 @@ offset_top = 301.0
 offset_right = 680.0
 offset_bottom = 361.0
 size_flags_horizontal = 4
-theme_override_colors/font_hover_color = Color(0.1, 0.1, 0.15, 1)
-theme_override_colors/font_color = Color(0.1, 0.1, 0.15, 1)
+focus_mode = 0
+theme_override_colors/font_hover_color = Color(0.988235, 0.960784, 0.964706, 1)
+theme_override_colors/font_color = Color(0.694118, 0.698039, 0.803922, 1)
 theme_override_font_sizes/font_size = 28
 text = "Normal level"
 
@@ -90,8 +92,9 @@ offset_top = 300.0
 offset_right = 952.0
 offset_bottom = 360.0
 size_flags_horizontal = 4
-theme_override_colors/font_hover_color = Color(0.1, 0.1, 0.15, 1)
-theme_override_colors/font_color = Color(0.1, 0.1, 0.15, 1)
+focus_mode = 0
+theme_override_colors/font_hover_color = Color(0.988235, 0.960784, 0.964706, 1)
+theme_override_colors/font_color = Color(0.694118, 0.698039, 0.803922, 1)
 theme_override_font_sizes/font_size = 28
 text = "Hard level"
 
