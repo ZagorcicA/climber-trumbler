@@ -12,6 +12,7 @@ Development roadmap for completing the prototype and beyond.
 **Phase 4:** ✓ Head Tracking - COMPLETE
 **Phase 4.5:** ✓ Refactoring - COMPLETE (consolidated holds, reorganized scenes/docs)
 **Phase 5:** ✓ Stamina System - COMPLETE (drain/regen, position multipliers, hold difficulty, UI bar)
+**Phase 5.5:** ✓ PhysicsConstants - COMPLETE (centralized SSOT for all physics values, 75kg climber)
 
 **Overall:** ~90% of core prototype complete (need win/lose conditions for MVP)
 

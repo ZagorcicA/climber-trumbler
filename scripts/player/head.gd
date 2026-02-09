@@ -6,10 +6,6 @@ extends RigidBody2D
 var target_rotation: float = 0.0
 var is_tracking: bool = false
 
-# Head behavior parameters
-const LOOK_SPEED = 50.0  # How fast head turns toward target
-const UPRIGHT_FORCE = 3000.0  # Force to keep head upright when idle
-const MAX_LOOK_ANGLE = 80.0  # Max degrees head can turn (prevents breaking neck)
 
 func _ready():
 	pass
@@ -34,7 +30,7 @@ func track_position(world_position: Vector2):
 	# Clamp to max angle to prevent unnatural neck breaking
 	var current_angle = rotation
 	var angle_diff = wrapf(target_rotation - current_angle, -PI, PI)
-	var max_angle_rad = deg_to_rad(MAX_LOOK_ANGLE)
+	var max_angle_rad = deg_to_rad(PhysicsConstants.HEAD_MAX_LOOK_ANGLE)
 
 	if abs(angle_diff) > max_angle_rad:
 		target_rotation = current_angle + sign(angle_diff) * max_angle_rad
@@ -48,7 +44,7 @@ func _track_cursor(delta):
 	var angle_diff = wrapf(target_rotation - rotation, -PI, PI)
 
 	# Directly set angular velocity to rotate toward target
-	var desired_angular_vel = angle_diff * LOOK_SPEED
+	var desired_angular_vel = angle_diff * PhysicsConstants.HEAD_LOOK_SPEED
 	angular_velocity = desired_angular_vel
 
 
@@ -58,7 +54,7 @@ func _stabilize_upright(delta):
 	var angle_diff = wrapf(upright_angle - rotation, -PI, PI)
 
 	# Directly set angular velocity to rotate toward upright
-	var desired_angular_vel = angle_diff * 10.0  # Strong correction
+	var desired_angular_vel = angle_diff * PhysicsConstants.HEAD_UPRIGHT_CORRECTION
 	angular_velocity = desired_angular_vel
 
 

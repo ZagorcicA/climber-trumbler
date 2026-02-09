@@ -15,13 +15,12 @@ var selected_limb_index: int = -1
 var torso_on_ground: bool = false  # Tracks if torso is touching floor/ground
 var legs_on_ground: int = 0  # Count of legs touching the floor
 
-const STAND_SUPPORT_FORCE = 2500.0  # Upward force when legs grounded
-const STAND_UPRIGHT_TORQUE = 8000.0  # Torque to keep torso vertical
-const STAND_DAMPING = 0.85  # Reduce horizontal sliding
-
 func _ready():
 	# Register all limbs in order: 1=LeftArm, 2=RightArm, 3=LeftLeg, 4=RightLeg
 	limbs = [left_arm, right_arm, left_leg, right_leg]
+
+	# Apply centralized physics constants to all body parts
+	_apply_physics_constants()
 
 	# Select first limb by default
 	if limbs.size() > 0:
@@ -47,18 +46,22 @@ func _process(delta):
 	_update_stamina(delta)
 
 func _physics_process(_delta):
-	if legs_on_ground <= 0:
-		return
+	# Propagate latched state to all limbs (must run before limb _physics_process)
+	var latched_count = _get_latched_count()
+	var is_any_latched = latched_count > 0
+	for limb in limbs:
+		limb.any_limb_latched = is_any_latched
 
-	# Upward support force (like "leg muscles")
-	var support_multiplier = 1.0 if legs_on_ground >= 2 else 0.6
-	torso.apply_central_force(Vector2(0, -STAND_SUPPORT_FORCE * support_multiplier))
+	# Standing support (ground mode)
+	if legs_on_ground > 0:
+		var support_multiplier = 1.0 if legs_on_ground >= 2 else 0.6
+		torso.apply_central_force(Vector2(0, -PhysicsConstants.STAND_SUPPORT_FORCE * support_multiplier))
+		torso.apply_torque(-torso.rotation * PhysicsConstants.STAND_UPRIGHT_TORQUE)
+		torso.linear_velocity.x *= PhysicsConstants.STAND_DAMPING
 
-	# Upright torque correction (proportional controller)
-	torso.apply_torque(-torso.rotation * STAND_UPRIGHT_TORQUE)
-
-	# Horizontal damping to prevent sliding
-	torso.linear_velocity.x *= STAND_DAMPING
+	# Lean mechanic (attached mode, off ground, position mode only)
+	if is_any_latched and legs_on_ground <= 0 and not InputManager.is_rotation_mode:
+		_apply_lean_toward_mouse()
 
 func _handle_limb_selection():
 	# Use InputManager for centralized input handling (SSOT)
@@ -190,3 +193,55 @@ func _on_leg_body_entered(body: Node):
 func _on_leg_body_exited(body: Node):
 	if body is StaticBody2D and body.collision_layer & 2:
 		legs_on_ground = max(0, legs_on_ground - 1)
+
+func _get_latched_count() -> int:
+	var count = 0
+	for limb in limbs:
+		if limb.is_latched:
+			count += 1
+	return count
+
+func _apply_lean_toward_mouse():
+	var mouse_pos = InputManager.get_mouse_world_position()
+	var offset = mouse_pos - torso.global_position
+	var distance = offset.length()
+	var direction = offset.normalized()
+
+	# Scale lean strength by cursor distance (closer = less lean, farther = more lean)
+	var lean_factor = clampf(distance / PhysicsConstants.LEAN_MAX_DISTANCE, 0.0, 1.0)
+
+	# Directional force on torso (pendulum swing via latch pivot)
+	torso.apply_central_force(direction * PhysicsConstants.LEAN_FORCE * lean_factor)
+
+	# Lean torque (tilt torso toward mouse side)
+	var angle_to_mouse = offset.angle()
+	var lean_angle_diff = fmod(angle_to_mouse - torso.rotation + PI, 2 * PI) - PI
+	torso.apply_torque(lean_angle_diff * PhysicsConstants.LEAN_TORQUE * lean_factor)
+
+	# Damping to prevent wild oscillation
+	torso.linear_velocity *= PhysicsConstants.LEAN_DAMPING
+
+func _apply_physics_constants():
+	"""Enforce centralized physics values on all body parts at runtime."""
+	# Torso
+	torso.mass = PhysicsConstants.MASS_TORSO
+	torso.gravity_scale = PhysicsConstants.GRAVITY_SCALE
+	torso.linear_damp = PhysicsConstants.LINEAR_DAMP_TORSO
+	torso.angular_damp = PhysicsConstants.ANGULAR_DAMP_TORSO
+
+	# Head
+	head.mass = PhysicsConstants.MASS_HEAD
+	head.gravity_scale = PhysicsConstants.GRAVITY_SCALE
+	head.linear_damp = PhysicsConstants.LINEAR_DAMP_HEAD
+	head.angular_damp = PhysicsConstants.ANGULAR_DAMP_HEAD
+
+	# Limbs — arms (indices 0-1) and legs (indices 2-3) have different masses
+	for i in range(limbs.size()):
+		var limb = limbs[i]
+		if i < 2:  # Arms
+			limb.mass = PhysicsConstants.MASS_ARM
+		else:       # Legs
+			limb.mass = PhysicsConstants.MASS_LEG
+		limb.gravity_scale = PhysicsConstants.GRAVITY_SCALE
+		limb.linear_damp = PhysicsConstants.LINEAR_DAMP_LIMB
+		limb.angular_damp = PhysicsConstants.ANGULAR_DAMP_LIMB

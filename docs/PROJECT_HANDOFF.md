@@ -15,7 +15,7 @@
 - Tactile ragdoll physics with satisfying movement
 - Precision limb control with mouse-based targeting
 - Puzzle-like climbing requiring hold sequencing
-- Resource management through stamina system (not yet implemented)
+- Resource management through stamina system
 
 **Gameplay Loop:**
 1. Select a limb (keys 1-4)
@@ -84,8 +84,9 @@ climber--trumbler/
 │   │   ├── hold.gd              # Hold attachment logic with difficulty colors
 │   │   └── level.gd             # Level management, restart
 │   ├── managers/
-│   │   ├── input_manager.gd     # Singleton for input (SSOT)
-│   │   └── stamina_manager.gd   # Singleton for stamina state
+│   │   ├── physics_constants.gd    # Singleton for physics constants (SSOT)
+│   │   ├── input_manager.gd       # Singleton for input (SSOT)
+│   │   └── stamina_manager.gd     # Singleton for stamina state
 │   └── ui/                      # UI controllers
 │
 ├── docs/                        # Technical documentation
@@ -102,6 +103,8 @@ climber--trumbler/
 - InputManager is the only place input state is read
 - All scripts query InputManager rather than calling Input directly
 - Prevents duplicate input handling and state desync
+- PhysicsConstants is the SINGLE SOURCE OF TRUTH for all physics values
+- All scripts reference PhysicsConstants instead of defining local constants
 
 ### **Don't Repeat Yourself (DRY)**
 - Limb.tscn is instanced 4 times (not duplicated)
@@ -123,11 +126,13 @@ climber--trumbler/
 
 ## ⚙️ Current Physics Configuration
 
-### **Body Masses** (Tuned for light, floppy feel)
-- Torso: 3.0 kg
-- Head: 2.0 kg (user may have changed to 5.0)
-- Each Limb: 0.8 kg
-- **Total: ~6.2 kg**
+### **Body Masses** (Based on 75kg experienced climber at 0.1x game scale)
+- Torso: 3.8 kg
+- Head: 0.5 kg
+- Each Arm: 0.4 kg
+- Each Leg: 1.2 kg
+- **Total: 7.5 kg**
+- All values centralized in PhysicsConstants autoload singleton
 
 ### **Damping** (Low for responsiveness)
 - Torso/Head: linear 0.3, angular 0.5 (Head angular: 0.1)
@@ -138,7 +143,7 @@ climber--trumbler/
 - Arms/Legs: 0.4
 
 ### **Limb Movement**
-- MOVE_FORCE: 15000.0 (very high to swing body)
+- MOVE_FORCE: 6000.0 (very high to swing body)
 - MAX_VELOCITY: 800.0
 - DAMPING: 0.99
 
@@ -186,11 +191,11 @@ None critical at this time. Head tracking is working. Stamina and win/lose syste
 ## 🔜 Not Yet Implemented
 
 ### **Core Gameplay Missing:**
-- Stamina system (drain when holding, regenerate when free)
-- StaminaBar UI
 - Win condition trigger at top of level
 - Lose condition (stamina = 0)
 - Game restart on loss
+
+**Note:** Stamina system has been implemented (StaminaManager + StaminaBar UI). Physics constants are now centralized in the PhysicsConstants autoload singleton.
 
 ### **Polish Missing:**
 - Sound effects (latch, detach, fall, win)

@@ -11,13 +11,19 @@ Active problems that need resolution before continuing development.
 - **Fix:** Working correctly now — head tracks cursor when limb selected, returns upright when idle
 - **Files:** `scripts/player/head.gd`, `scripts/player/player.gd`
 
+### Physics Constants Scattered — FIXED
+- **Previously:** Constants spread across 5 files with scene/doc inconsistencies
+- **Fix:** All physics values centralized in PhysicsConstants autoload singleton
+- **Files:** `scripts/managers/physics_constants.gd` (SSOT), all scripts updated to reference it
+
 ---
 
 ## 🟡 Minor / Non-Blocking
 
-### 1. Debug Print Statements in hold.gd
-- `hold.gd` line 58 prints drain multiplier every frame
-- Should be removed or gated behind a debug flag before release
+### 1. hold.gd Drain Multiplier Refactored
+- The `DIFFICULTY_DRAIN_MULTIPLIER` dict was removed and replaced with a match statement in `get_drain_multiplier()`
+- Debug print statements have been removed
+- Refactored due to autoload timing constraints (const dicts cannot reference autoload values at parse time)
 
 ### 2. Silent Stamina Latch Rejection
 - When player can't latch due to low stamina, only a `print()` fires

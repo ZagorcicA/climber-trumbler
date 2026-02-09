@@ -348,6 +348,53 @@ Goal: Light, floppy ragdoll that swings around dramatically.
 
 ---
 
+## 📅 Session 7: PhysicsConstants Centralization
+
+### **7.1 Problem: Scattered Constants**
+
+Physics constants were spread across 5 script files with values that differed from documentation:
+- Torso mass: 8.0 in scene vs 3.0 in docs
+- Gravity scale: 0.3 in scene (causing floating!) vs 1.0 in docs
+- Limb mass: 3.0 in scene vs 0.8 in docs
+
+### **7.2 Solution: PhysicsConstants Autoload**
+
+Created `scripts/managers/physics_constants.gd` as a centralized SSOT:
+- Registered as first autoload in project.godot (loads before InputManager and StaminaManager)
+- All physics values organized by category
+- Based on realistic 75kg experienced climber with moderate grip strength
+- Mass scale factor 0.1x preserves human proportions while keeping gameplay viable
+
+### **7.3 Mass Distribution (75kg Climber)**
+
+| Part | Real kg | Game Mass | % of Body |
+|------|---------|-----------|-----------|
+| Head | 5.0 | 0.5 | 6.7% |
+| Torso | 37.5 | 3.8 | 50% |
+| Each Arm | 4.0 | 0.4 | 5.3% |
+| Each Leg | 12.4 | 1.2 | 16.5% |
+| **Total** | **75.0** | **7.5** | **100%** |
+
+### **7.4 Key Changes**
+
+- Fixed gravity_scale from 0.3 to 1.0 (no floating!)
+- Fixed torso mass from 8.0 to 3.8, head from 2.0 to 0.5
+- Arms (0.4) now lighter than legs (1.2) — realistic differentiation
+- Migrated 21 constants from 5 scripts into one file
+- Added `_apply_physics_constants()` in player.gd for runtime enforcement
+- hold.gd: replaced const dict with match statement (autoload timing)
+- Updated all 6 documentation files
+
+### **7.5 Grip Strength**
+
+Grip strength (45 kg-force) is encoded through the hold difficulty drain multipliers:
+- Easy holds: 1.0x drain (jug holds)
+- Medium holds: 1.5x drain
+- Hard holds: 2.5x drain (crimps/slopers)
+Combined with position multipliers (arms-only 2.5x, legs-efficient 0.7x), this creates the grip challenge.
+
+---
+
 ## 📅 Key Decisions Summary
 
 ### **Architecture Decisions**
@@ -413,8 +460,10 @@ Goal: Light, floppy ragdoll that swings around dramatically.
 - ✓ Phase 3: Hold system with latch/detach working
 - ✓ Phase 4: Head tracking fully working
 - ✓ Phase 4.5: Project refactoring (holds, scenes, docs)
+- ✓ Phase 5: Stamina system implemented
+- ✓ Phase 5.5: PhysicsConstants centralization (SSOT for all physics values)
 
-**Overall Progress:** ~80% of core prototype complete
+**Overall Progress:** ~90% of core prototype complete
 
 ---
 
@@ -433,16 +482,17 @@ Goal: Light, floppy ragdoll that swings around dramatically.
 
 - ✓ Head tracking is now working
 - ✓ Project refactored and organized
+- ✓ Stamina system implemented (StaminaManager + StaminaBar UI)
+- ✓ PhysicsConstants centralized as autoload singleton (SSOT)
 - Physics feel is good - user was happy
 - Architecture is solid - easy to extend
 - All documentation updated for current state
 
-**Next Priority:** Implement stamina system (Phase 5)
-- Follow roadmap in NEXT_STEPS.md
-- Create StaminaManager singleton
-- Integrate drain/regen logic with player
-- Create StaminaBar UI
-- Balance tuning for fun gameplay
+**Next Priority:** Win/lose conditions and polish
+- Win condition trigger at top of level
+- Lose condition (stamina = 0)
+- Game restart on loss
+- Sound effects and particle effects
 
 ---
 

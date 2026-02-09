@@ -8,12 +8,6 @@ enum HoldDifficulty {EASY, MEDIUM, HARD}
 
 @export var hold_difficulty: HoldDifficulty = HoldDifficulty.EASY
 
-# Drain multipliers per difficulty - harder holds drain stamina faster
-const DIFFICULTY_DRAIN_MULTIPLIER = {
-	HoldDifficulty.EASY: 1.0,
-	HoldDifficulty.MEDIUM: 1.5,
-	HoldDifficulty.HARD: 2.5,
-}
 
 # Visual colors per difficulty
 const DIFFICULTY_COLORS = {
@@ -55,4 +49,12 @@ func get_attach_position() -> Vector2:
 
 func get_drain_multiplier() -> float:
 	"""Returns the stamina drain multiplier for this hold's difficulty"""
-	return DIFFICULTY_DRAIN_MULTIPLIER.get(hold_difficulty, 1.0)
+	match hold_difficulty:
+		HoldDifficulty.EASY:
+			return PhysicsConstants.HOLD_DRAIN_EASY
+		HoldDifficulty.MEDIUM:
+			return PhysicsConstants.HOLD_DRAIN_MEDIUM
+		HoldDifficulty.HARD:
+			return PhysicsConstants.HOLD_DRAIN_HARD
+		_:
+			return 1.0

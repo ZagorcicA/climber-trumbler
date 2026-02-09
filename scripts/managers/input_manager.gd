@@ -11,6 +11,7 @@ var mouse_position: Vector2 = Vector2.ZERO
 var latch_just_pressed: bool = false
 var detach_just_pressed: bool = false
 var limb_selection_pressed: int = -1  # 0-3 for limbs 1-4, -1 for none
+var is_rotation_mode: bool = false  # false = position mode, true = rotation mode
 
 func _process(_delta):
 	# Update mouse position
@@ -27,6 +28,9 @@ func _process(_delta):
 
 	if Input.is_action_just_pressed("detach_limb"):
 		detach_just_pressed = true
+
+	if Input.is_action_just_pressed("toggle_mode"):
+		is_rotation_mode = not is_rotation_mode
 
 	# Check limb selection inputs
 	if Input.is_action_just_pressed("select_limb_1"):

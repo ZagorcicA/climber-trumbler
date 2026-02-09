@@ -78,7 +78,7 @@ const JOINT_POS_RIGHT_LEG: Vector2 = Vector2(22, 50)
 # ============================================================
 # MOVEMENT FORCES
 # ============================================================
-const MOVE_FORCE: float = 15000.0          # Force limb applies toward mouse
+const MOVE_FORCE: float = 6000.0          # Force limb applies toward mouse
 const MAX_VELOCITY: float = 800.0          # Limb speed cap (pixels/s)
 const MOVE_DAMPING: float = 0.99           # Velocity retention per frame
 const MOVE_DEAD_ZONE: float = 10.0         # Pixels before force applies
@@ -122,6 +122,27 @@ const MULT_GROUNDED: float = 1.2           # Floor-supported regen
 # ============================================================
 # HOLD DIFFICULTY DRAIN MULTIPLIERS
 # ============================================================
-const HOLD_DRAIN_EASY: float = 1.0         # Jug holds, low grip demand
+const HOLD_DRAIN_EASY: float = .25         # Jug holds, low grip demand
 const HOLD_DRAIN_MEDIUM: float = 1.5       # Moderate grip demand
 const HOLD_DRAIN_HARD: float = 2.5         # Crimps/slopers, high grip demand
+
+# ============================================================
+# HORIZONTAL-ONLY MOVEMENT (unattached mode)
+# ============================================================
+const MOVE_FORCE_HORIZONTAL: float = 5000.0  # Horizontal force when no limbs latched
+const MOVE_FORCE_ATTACHED: float = 3000.0    # Force for free limb when another is latched
+
+# ============================================================
+# LIMB ROTATION TRACKING
+# ============================================================
+const LIMB_LOOK_SPEED: float = 50.0          # Angular velocity multiplier toward mouse
+const LIMB_MAX_LOOK_ANGLE: float = 120.0     # Max rotation from upright (degrees)
+const LIMB_UPRIGHT_CORRECTION: float = 5.0   # Return-to-upright speed when idle
+
+# ============================================================
+# LEAN / SWING MECHANICS
+# ============================================================
+const LEAN_FORCE: float = 2000.0             # Torso force toward mouse when latched (at max distance)
+const LEAN_TORQUE: float = 6000.0            # Torso lean torque toward mouse (at max distance)
+const LEAN_DAMPING: float = 0.92             # Pendulum damping
+const LEAN_MAX_DISTANCE: float = 300.0       # Distance (pixels) at which lean reaches full strength

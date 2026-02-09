@@ -13,8 +13,8 @@ radius = 15.0
 
 [node name="Limb" type="RigidBody2D"]
 collision_mask = 7
-mass = 3.0
-linear_damp = 1.0
+mass = 0.8
+linear_damp = 0.2
 angular_damp = 0.3
 script = ExtResource("1_limb")
 

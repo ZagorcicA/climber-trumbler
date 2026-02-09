@@ -16,16 +16,17 @@ Complete technical breakdown of systems, data flow, and implementation details.
 │                         │                                │
 └─────────────────────────┼────────────────────────────────┘
                           │
-                ┌─────────┴─────────┐
-                │                   │
-        ┌───────▼────────┐  ┌──────▼──────┐
-        │ InputManager   │  │  Physics    │
-        │  (Singleton)   │  │  Engine     │
-        │                │  │             │
-        │ - Mouse pos    │  │ - Gravity   │
-        │ - Key states   │  │ - Collisions│
-        │ - SSOT         │  │ - Joints    │
-        └────────────────┘  └─────────────┘
+           ┌──────────────┼──────────────┐
+           │              │              │
+  ┌────────▼─────────┐ ┌─▼────────┐ ┌───▼─────────────┐
+  │ PhysicsConstants │ │  Input   │ │  Physics        │
+  │  (Singleton)     │ │  Manager │ │  Engine         │
+  │                  │ │(Singleton│ │                  │
+  │ - Body masses    │ │          │ │ - Gravity        │
+  │ - Damping vals   │ │- Mouse   │ │ - Collisions     │
+  │ - Forces/joints  │ │- Keys    │ │ - Joints         │
+  │ - SSOT physics   │ │- SSOT    │ │                  │
+  └──────────────────┘ └──────────┘ └──────────────────┘
 ```
 
 ---
@@ -226,6 +227,38 @@ Access Pattern:
 
 ---
 
+### **PhysicsConstants System**
+
+**Type:** Autoload Singleton (always loaded, globally accessible, loads first)
+
+**Script: physics_constants.gd**
+```
+Responsibilities:
+- SINGLE SOURCE OF TRUTH for all physics values
+- Centralizes body masses, positions, damping, joints, movement forces, stamina config
+- Based on realistic 75kg experienced climber (0.1x mass scale for gameplay)
+- Enforces gravity_scale = 1.0 on all bodies (no floating)
+
+Constant Categories:
+- World & Gravity (GRAVITY, PIXELS_PER_METER, GRAVITY_SCALE)
+- Climber Profile (CLIMBER_MASS_KG, MASS_SCALE, GRIP_STRENGTH)
+- Body Masses (MASS_HEAD, MASS_TORSO, MASS_ARM, MASS_LEG)
+- Body Positions (POS_HEAD, POS_LEFT_ARM, etc.)
+- Body Sizes (SIZE_TORSO, SIZE_HEAD_RADIUS, etc.)
+- Damping (LINEAR_DAMP_*, ANGULAR_DAMP_*)
+- Joint Properties (JOINT_SOFTNESS_*, JOINT_POS_*)
+- Movement Forces (MOVE_FORCE, MAX_VELOCITY, MOVE_DAMPING)
+- Standing Support (STAND_SUPPORT_FORCE, STAND_UPRIGHT_TORQUE)
+- Head Tracking (HEAD_LOOK_SPEED, HEAD_MAX_LOOK_ANGLE)
+- Stamina (MAX_STAMINA, BASE_DRAIN_RATE, position multipliers)
+- Hold Difficulty (HOLD_DRAIN_EASY/MEDIUM/HARD)
+
+Access Pattern:
+- Any script: PhysicsConstants.CONSTANT_NAME
+```
+
+---
+
 ### **5. Hold Color System**
 
 **Script: hold.gd (attached to Hold.tscn)**
@@ -377,6 +410,7 @@ scripts/
 │   ├── hold.gd
 │   └── level.gd
 ├── managers/       # Autoload singletons
+│   ├── physics_constants.gd
 │   ├── input_manager.gd
 │   └── stamina_manager.gd
 └── ui/             # UI controllers
@@ -463,8 +497,11 @@ LevelEasy (Node2D) [level.gd]
 
 ### **RigidBody2D Properties**
 
+All values centralized in PhysicsConstants singleton.
+Arms and legs have different masses (set at runtime by player.gd).
+
 **Torso:**
-- Mass: 3.0
+- Mass: 3.8
 - Linear Damp: 0.3
 - Angular Damp: 0.5
 - Collision Layer: 1
@@ -472,7 +509,7 @@ LevelEasy (Node2D) [level.gd]
 - Gravity Scale: 1.0
 
 **Head:**
-- Mass: 2.0 (possibly changed to 5.0 by user)
+- Mass: 0.5
 - Linear Damp: 0.3
 - Angular Damp: 0.1
 - Collision Layer: 1
@@ -480,8 +517,17 @@ LevelEasy (Node2D) [level.gd]
 - Gravity Scale: 1.0
 - Script: head.gd
 
-**Limbs (each):**
-- Mass: 0.8
+**Arms (each):**
+- Mass: 0.4
+- Linear Damp: 0.2
+- Angular Damp: 0.3
+- Collision Layer: 1
+- Collision Mask: 7
+- Gravity Scale: 1.0
+- Script: limb.gd
+
+**Legs (each):**
+- Mass: 1.2
 - Linear Damp: 0.2
 - Angular Damp: 0.3
 - Collision Layer: 1
@@ -520,25 +566,17 @@ All joints use similar configuration:
 - Shown when attached_limbs.size() > 0
 
 ### **Debug Prints**
-Currently active in head.gd:
-- "Head physics - is_tracking: X rotation: Y"
-- "Tracking - angle_diff: X setting angular_vel to: Y"
-- "Upright - Current rotation: X angle_diff: Y"
-
-Also in limb.gd:
-- "Hold detected! Nearby holds count: X"
-- "Hold lost! Nearby holds count: X"
-- "Limb latched to hold at [position]"
-- "Limb detached from hold"
+All debug print statements have been removed from production code.
 
 ---
 
 ## 🔐 Design Patterns Used
 
 ### **Singleton Pattern**
-- InputManager is autoloaded
-- Globally accessible as `InputManager.property`
+- PhysicsConstants and InputManager are autoloaded
+- Globally accessible as `PhysicsConstants.CONSTANT_NAME` and `InputManager.property`
 - Single instance for entire game lifetime
+- PhysicsConstants loads first as the single source of truth for all physics values
 
 ### **Component Pattern**
 - Limb.tscn is a self-contained component

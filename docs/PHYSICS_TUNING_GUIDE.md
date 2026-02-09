@@ -8,13 +8,13 @@ Complete reference for all physics parameters and how to tune the ragdoll feel.
 
 | Want to... | Parameter | Location | Direction |
 |------------|-----------|----------|-----------|
-| Lighter player | Mass | scenes/player/Player.tscn, Limb.tscn | ⬇️ Lower |
-| More power | MOVE_FORCE | scripts/player/limb.gd | ⬆️ Higher |
-| More floppy | Joint softness | scenes/player/Player.tscn (joints) | ⬆️ Higher |
-| More control | Damping | RigidBody2D properties | ⬆️ Higher |
-| Less spinning | Angular damp | RigidBody2D properties | ⬆️ Higher |
-| Faster limbs | MAX_VELOCITY | scripts/player/limb.gd | ⬆️ Higher |
-| Floatier | Gravity scale | RigidBody2D properties | ⬇️ Lower |
+| Lighter player | Mass | `scripts/managers/physics_constants.gd` | ⬇️ Lower |
+| More power | MOVE_FORCE | `scripts/managers/physics_constants.gd` | ⬆️ Higher |
+| More floppy | Joint softness | `scripts/managers/physics_constants.gd` | ⬆️ Higher |
+| More control | Damping | `scripts/managers/physics_constants.gd` | ⬆️ Higher |
+| Less spinning | Angular damp | `scripts/managers/physics_constants.gd` | ⬆️ Higher |
+| Faster limbs | MAX_VELOCITY | `scripts/managers/physics_constants.gd` | ⬆️ Higher |
+| Floatier | Gravity scale | `scripts/managers/physics_constants.gd` | ⬇️ Lower |
 
 ---
 
@@ -24,17 +24,19 @@ Complete reference for all physics parameters and how to tune the ragdoll feel.
 
 **Current Values:**
 ```
-Torso: 3.0 kg
-Head: 2.0 kg (possibly 5.0 - user was experimenting)
-Each Limb: 0.8 kg
-Total Body: ~6.2 kg
+Torso: 3.8 kg
+Head: 0.5 kg
+Arms: 0.4 kg each
+Legs: 1.2 kg each
+Total Body: 7.5 kg
 ```
 
+> Based on 75kg experienced climber at 0.1x game scale
+
+> Arms and legs have different masses (enforced at runtime by player.gd _apply_physics_constants())
+
 **Where to Edit:**
-- Open `scenes/player/Player.tscn` in Godot
-- Select "Torso" or "Head" node in scene tree
-- Inspector → RigidBody2D → Mass
-- For limbs: Open `scenes/player/Limb.tscn` → Select "Limb" root → Mass
+- `scripts/managers/physics_constants.gd` — MASS_HEAD, MASS_TORSO, MASS_ARM, MASS_LEG
 
 **What It Affects:**
 - ⬆️ Higher mass = Harder to move, more momentum, feels "heavy"
@@ -64,8 +66,7 @@ Limbs: 0.2
 ```
 
 **Where to Edit:**
-- Select body part in scene tree
-- Inspector → RigidBody2D → Linear Damp
+- `scripts/managers/physics_constants.gd` — LINEAR_DAMP_TORSO, LINEAR_DAMP_HEAD, LINEAR_DAMP_LIMB
 
 **What It Affects:**
 - Slows down straight-line movement (like air resistance or friction)
@@ -95,8 +96,7 @@ Limbs: 0.3
 ```
 
 **Where to Edit:**
-- Select body part in scene tree
-- Inspector → RigidBody2D → Angular Damp
+- `scripts/managers/physics_constants.gd`
 
 **What It Affects:**
 - Slows down rotation/spinning
@@ -126,9 +126,7 @@ Latch Joints (dynamic): 0.05
 ```
 
 **Where to Edit:**
-- Open `scenes/player/Player.tscn`
-- Select any joint node (e.g., "LeftArmJoint")
-- Inspector → PinJoint2D → Softness
+- `scripts/managers/physics_constants.gd` — JOINT_SOFTNESS_NECK, JOINT_SOFTNESS_ARM, JOINT_SOFTNESS_LEG
 
 **What It Affects:**
 - 0 = Rigid connection (stiff, like a robot)
@@ -161,13 +159,12 @@ Stiff joint (0.1):     Soft joint (0.4):
 
 **Current Value:**
 ```gdscript
-// In scripts/player/limb.gd line 17
+// In scripts/managers/physics_constants.gd
 const MOVE_FORCE = 15000.0
 ```
 
 **Where to Edit:**
-- Open `scripts/player/limb.gd` in text editor
-- Line 17: `const MOVE_FORCE = 15000.0`
+- `scripts/managers/physics_constants.gd` — MOVE_FORCE
 
 **What It Affects:**
 - How hard the limb pushes toward the mouse cursor
@@ -193,13 +190,12 @@ const MOVE_FORCE = 15000.0
 
 **Current Value:**
 ```gdscript
-// In scripts/player/limb.gd line 18
+// In scripts/managers/physics_constants.gd
 const MAX_VELOCITY = 800.0
 ```
 
 **Where to Edit:**
-- Open `scripts/player/limb.gd`
-- Line 18: `const MAX_VELOCITY = 800.0`
+- `scripts/managers/physics_constants.gd` — MAX_VELOCITY
 
 **What It Affects:**
 - Maximum speed limb can reach (pixels/second)
@@ -224,13 +220,12 @@ const MAX_VELOCITY = 800.0
 
 **Current Value:**
 ```gdscript
-// In scripts/player/limb.gd line 19
-const DAMPING = 0.99
+// In scripts/managers/physics_constants.gd
+const MOVE_DAMPING = 0.99
 ```
 
 **Where to Edit:**
-- Open `scripts/player/limb.gd`
-- Line 19: `const DAMPING = 0.99`
+- `scripts/managers/physics_constants.gd` — MOVE_DAMPING
 
 **What It Affects:**
 - How much velocity is kept each frame (multiplier)
@@ -256,12 +251,13 @@ const DAMPING = 0.99
 
 **Current Values:**
 ```
-All bodies: 1.0
+ALL bodies: 1.0 (enforced by PhysicsConstants — no floating!)
 ```
 
+> PhysicsConstants.GRAVITY_SCALE = 1.0 is applied to all bodies in player.gd _apply_physics_constants()
+
 **Where to Edit:**
-- Select body part in scene tree
-- Inspector → RigidBody2D → Gravity Scale
+- `scripts/managers/physics_constants.gd`
 
 **What It Affects:**
 - Multiplier for gravity force
@@ -283,26 +279,23 @@ All bodies: 1.0
 
 ---
 
-### **9. HEAD TRACKING PARAMETERS** (⚠️ SYSTEM NOT WORKING)
+### **9. HEAD TRACKING PARAMETERS**
 
 **Current Values:**
 ```gdscript
-// In scripts/player/head.gd lines 10-12
-const LOOK_SPEED = 50.0
-const UPRIGHT_FORCE = 3000.0
-const MAX_LOOK_ANGLE = 80.0
+// In scripts/managers/physics_constants.gd
+const HEAD_LOOK_SPEED = 50.0
+const HEAD_UPRIGHT_FORCE = 3000.0
+const HEAD_MAX_LOOK_ANGLE = 80.0
 ```
 
 **Where to Edit:**
-- Open `scripts/player/head.gd`
-- Lines 10-12
+- `scripts/managers/physics_constants.gd` — HEAD_LOOK_SPEED, HEAD_UPRIGHT_FORCE, HEAD_MAX_LOOK_ANGLE
 
-**What They Should Affect:**
-- **LOOK_SPEED**: How fast head turns to cursor (degrees/sec multiplier)
-- **UPRIGHT_FORCE**: How strongly head returns to upright when idle
-- **MAX_LOOK_ANGLE**: Maximum rotation degrees (prevents "breaking neck")
-
-**Note:** System currently not functional despite being called correctly.
+**What They Affect:**
+- **HEAD_LOOK_SPEED**: How fast head turns to cursor (degrees/sec multiplier)
+- **HEAD_UPRIGHT_FORCE**: How strongly head returns to upright when idle
+- **HEAD_MAX_LOOK_ANGLE**: Maximum rotation degrees (prevents "breaking neck")
 
 ---
 
@@ -466,7 +459,7 @@ Soft joint (0.4):
 6. Iterate quickly
 
 ### **Script Changes (Requires Reload)**
-1. Edit `scripts/player/limb.gd`
+1. Edit `scripts/managers/physics_constants.gd`
 2. Save file
 3. In Godot: Scene → Reload Saved Scene (Ctrl+R)
 4. Or close and reopen scene
@@ -486,8 +479,11 @@ Soft joint (0.4):
 
 **Goal:** Light, floppy ragdoll that can swing its body around dramatically for momentum-based climbing.
 
+**Basis:** Based on 75kg experienced climber with moderate grip strength.
+
 **Achieved By:**
-- Low masses (body = 6.2kg total vs original 19kg)
+- Mass scale 0.1x preserves proportions while keeping gameplay viable
+- Body total: 7.5 game-kg (was 6.2)
 - Soft joints (0.3-0.4 vs original 0.1)
 - High movement force (15000 vs original 500)
 - Low damping (0.2-0.3 linear, 0.3-0.5 angular)
@@ -521,10 +517,12 @@ Soft joint (0.4):
 
 Current Working Values (as of last session):
 ```gdscript
-// Masses
-Torso: 3.0
-Head: 2.0
-Limbs: 0.8
+// Masses (75kg climber at 0.1x scale)
+Torso: 3.8
+Head: 0.5
+Arms: 0.4 each
+Legs: 1.2 each
+Total: 7.5
 
 // Damping
 Torso/Head linear: 0.3
@@ -537,10 +535,12 @@ Limbs angular: 0.3
 Neck: 0.3
 Arms/Legs: 0.4
 
-// Movement (limb.gd)
+// Movement (PhysicsConstants)
 MOVE_FORCE: 15000.0
 MAX_VELOCITY: 800.0
-DAMPING: 0.99
+MOVE_DAMPING: 0.99
+
+// All constants in: scripts/managers/physics_constants.gd
 ```
 
 ---

@@ -2,11 +2,7 @@
 
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://scripts/environment/level.gd" id="2_level"]
-<<<<<<<< HEAD:scenes/environment/levels/LevelEasy.tscn
-[ext_resource type="PackedScene" path="res://scenes/environment/holds/HoldEasy.tscn" id="3_x4u4f"]
-========
 [ext_resource type="PackedScene" path="res://scenes/environment/Hold.tscn" id="3_x4u4f"]
->>>>>>>> main:scenes/levels/LevelEasy.tscn
 [ext_resource type="PackedScene" path="res://scenes/ui/StaminaBar.tscn" id="4_stamina"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
@@ -33,24 +29,39 @@ color = Color(0.3, 0.25, 0.2, 1)
 position = Vector2(576, 480)
 
 [node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(576, 300)
-zoom = Vector2(0.8, 0.8)
+position = Vector2(576, 200)
+zoom = Vector2(0.6, 0.6)
 
 [node name="UI" type="CanvasLayer" parent="."]
 
 [node name="StaminaBar" parent="UI" instance=ExtResource("4_stamina")]
 
 [node name="Hold1" parent="." instance=ExtResource("3_x4u4f")]
-position = Vector2(666, 473)
+position = Vector2(650, 480)
 
 [node name="Hold2" parent="." instance=ExtResource("3_x4u4f")]
-position = Vector2(477, 521)
+position = Vector2(450, 420)
 
 [node name="Hold3" parent="." instance=ExtResource("3_x4u4f")]
-position = Vector2(630, 308)
+position = Vector2(700, 350)
 
 [node name="Hold4" parent="." instance=ExtResource("3_x4u4f")]
-position = Vector2(386, 256)
+position = Vector2(420, 280)
 
 [node name="Hold5" parent="." instance=ExtResource("3_x4u4f")]
-position = Vector2(535, 101)
+position = Vector2(680, 210)
+
+[node name="Hold6" parent="." instance=ExtResource("3_x4u4f")]
+position = Vector2(440, 140)
+
+[node name="Hold7" parent="." instance=ExtResource("3_x4u4f")]
+position = Vector2(700, 70)
+
+[node name="Hold8" parent="." instance=ExtResource("3_x4u4f")]
+position = Vector2(430, 0)
+
+[node name="Hold9" parent="." instance=ExtResource("3_x4u4f")]
+position = Vector2(690, -70)
+
+[node name="Hold10" parent="." instance=ExtResource("3_x4u4f")]
+position = Vector2(560, -140)
