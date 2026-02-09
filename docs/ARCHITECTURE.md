@@ -48,6 +48,8 @@ Responsibilities:
 - Manage limbs array [left_arm, right_arm, left_leg, right_leg]
 - Handle limb selection (keys 1-4)
 - Coordinate latch/detach actions
+- Propagate latched state (any_limb_latched) to all limbs each frame
+- Apply lean/swing mechanic when hanging from holds
 - Update head tracking state
 - Query InputManager for all input
 
@@ -57,6 +59,8 @@ Key Functions:
 - _handle_limb_selection() - Processes number key input
 - _handle_limb_actions() - Processes Space/X for latch/detach
 - _update_head_tracking() - Tells head to track cursor or stabilize
+- _get_latched_count() - Returns number of latched limbs
+- _apply_lean_toward_mouse() - Lean torso toward mouse when hanging (distance-proportional)
 ```
 
 **Data Flow:**
@@ -88,7 +92,8 @@ User Input → InputManager → Player._process()
 **Script: limb.gd**
 ```
 Responsibilities:
-- Apply physics forces to follow mouse cursor
+- Apply physics forces to follow mouse cursor (two modes)
+- Rotate limb to point toward mouse cursor
 - Detect nearby holds via GrabArea signals
 - Manage latch/detach to holds
 - Visual feedback for selection state
@@ -96,6 +101,7 @@ Responsibilities:
 Key Variables:
 - is_selected: bool - Currently selected by player
 - is_latched: bool - Attached to a hold
+- any_limb_latched: bool - Set by player.gd each frame
 - target_position: Vector2 - Mouse position to move toward
 - latch_joint: PinJoint2D - Dynamic joint when latched
 - nearby_holds: Array - Holds currently in detection range
@@ -106,15 +112,28 @@ Key Functions:
 - get_nearest_hold() - Returns closest hold in nearby_holds
 - latch_to_hold(hold) - Creates PinJoint2D to attach
 - detach_from_hold() - Destroys joint and releases
-- _move_toward_target() - Applies forces toward mouse
+- _move_toward_target() - Applies forces toward mouse (mode-dependent)
+- _rotate_toward_mouse() - Rotates limb tip to point at cursor
+- _stabilize_rotation() - Returns limb to upright when not selected
 - _on_hold_detected(area) - Adds hold to nearby_holds
 - _on_hold_lost(area) - Removes hold from nearby_holds
 ```
 
+**Movement Modes (controlled by InputManager.is_rotation_mode):**
+- **Position mode** (default): Limb moves toward cursor AND rotates toward it
+- **Rotation mode** (Q toggle): Limb only rotates toward cursor, no movement force
+
 **Physics Movement Algorithm:**
 ```gdscript
 func _physics_process(delta):
-    if is_selected and not is_latched:
+    # Rotation always active for selected limbs
+    if is_selected:
+        _rotate_toward_mouse()
+    else:
+        _stabilize_rotation()
+
+    # Movement only in position mode
+    if not InputManager.is_rotation_mode and is_selected and not is_latched:
         target_position = get_global_mouse_position()
         _move_toward_target()
 
@@ -122,9 +141,13 @@ func _move_toward_target():
     direction = (target_position - global_position).normalized()
     distance = global_position.distance_to(target_position)
 
-    if distance > 10.0:  # Dead zone
-        force = direction * MOVE_FORCE  # 15000.0
-        apply_central_force(force)
+    if distance > MOVE_DEAD_ZONE:  # 10.0
+        if any_limb_latched:
+            # Attached: full directional force (reduced magnitude)
+            force = direction * MOVE_FORCE_ATTACHED  # 3000.0
+        else:
+            # Unattached: HORIZONTAL ONLY (prevents flying)
+            force = Vector2(direction.x * MOVE_FORCE_HORIZONTAL, 0.0)  # 5000.0
 
     # Velocity capping
     if linear_velocity.length() > MAX_VELOCITY:  # 800.0
@@ -132,6 +155,12 @@ func _move_toward_target():
 
     # Damping
     linear_velocity *= DAMPING  # 0.99
+
+func _rotate_toward_mouse():
+    # Limb tip points toward cursor position
+    direction = mouse_pos - global_position
+    target_rot = direction.angle() - PI / 2  # Tip points DOWN at rotation 0
+    angular_velocity = clamped_angle_diff * LIMB_LOOK_SPEED  # 50.0
 ```
 
 **Latch Mechanism:**
@@ -209,6 +238,7 @@ Key Variables:
 - latch_just_pressed: bool - Space pressed this frame
 - detach_just_pressed: bool - X pressed this frame
 - limb_selection_pressed: int - 0-3 for limbs, -1 if none
+- is_rotation_mode: bool - false=position mode, true=rotation mode (toggled by Q)
 
 Key Functions:
 - _process(delta) - Reads Input, updates state variables
@@ -216,6 +246,7 @@ Key Functions:
 
 Access Pattern:
 - Any script: InputManager.latch_just_pressed
+- Any script: InputManager.is_rotation_mode
 - Any script: InputManager.get_mouse_world_position()
 ```
 
@@ -248,6 +279,9 @@ Constant Categories:
 - Damping (LINEAR_DAMP_*, ANGULAR_DAMP_*)
 - Joint Properties (JOINT_SOFTNESS_*, JOINT_POS_*)
 - Movement Forces (MOVE_FORCE, MAX_VELOCITY, MOVE_DAMPING)
+- Horizontal Movement (MOVE_FORCE_HORIZONTAL, MOVE_FORCE_ATTACHED)
+- Limb Rotation (LIMB_LOOK_SPEED, LIMB_MAX_LOOK_ANGLE, LIMB_UPRIGHT_CORRECTION)
+- Lean/Swing Mechanics (LEAN_FORCE, LEAN_TORQUE, LEAN_DAMPING, LEAN_MAX_DISTANCE)
 - Standing Support (STAND_SUPPORT_FORCE, STAND_UPRIGHT_TORQUE)
 - Head Tracking (HEAD_LOOK_SPEED, HEAD_MAX_LOOK_ANGLE)
 - Stamina (MAX_STAMINA, BASE_DRAIN_RATE, position multipliers)
@@ -482,13 +516,21 @@ LevelEasy (Node2D) [level.gd]
 ├── Floor (StaticBody2D) @ (576, 600)
 │   ├── FloorShape (CollisionShape2D) - Rectangle 2000x100
 │   └── FloorVisual (ColorRect) - Brown
-├── Player (Player instance) @ (576, 200)
-├── Hold1 (Hold instance) @ (user-positioned)
-├── Hold2 (Hold instance) @ (user-positioned)
-├── Hold3 (Hold instance) @ (user-positioned)
-├── Hold4 (Hold instance) @ (user-positioned)
-└── Camera2D @ (576, 324)
-    - Zoom: (0.8, 0.8)
+├── Player (Player instance) @ (576, 480)
+├── UI (CanvasLayer)
+│   └── StaminaBar
+├── Hold1-Hold10 (Hold instances) - Zig-zag pattern from y=480 to y=-140
+└── Camera2D @ (576, 200)
+    - Zoom: (0.6, 0.6)
+```
+
+**LevelEasy Hold Layout (zig-zag pattern, 10 holds):**
+```
+Hold1  (650, 480)  - Right    Hold6  (440, 140)  - Left
+Hold2  (450, 420)  - Left     Hold7  (700,  70)  - Right
+Hold3  (700, 350)  - Right    Hold8  (430,   0)  - Left
+Hold4  (420, 280)  - Left     Hold9  (690, -70)  - Right
+Hold5  (680, 210)  - Right    Hold10 (560,-140)  - Center (top)
 ```
 
 ---

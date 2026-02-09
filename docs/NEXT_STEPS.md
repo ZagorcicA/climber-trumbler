@@ -13,8 +13,9 @@ Development roadmap for completing the prototype and beyond.
 **Phase 4.5:** ✓ Refactoring - COMPLETE (consolidated holds, reorganized scenes/docs)
 **Phase 5:** ✓ Stamina System - COMPLETE (drain/regen, position multipliers, hold difficulty, UI bar)
 **Phase 5.5:** ✓ PhysicsConstants - COMPLETE (centralized SSOT for all physics values, 75kg climber)
+**Phase 5.6:** ✓ Physics Realism - COMPLETE (horizontal-only movement, lean mechanic, limb rotation, mode toggle, LevelEasy zig-zag)
 
-**Overall:** ~90% of core prototype complete (need win/lose conditions for MVP)
+**Overall:** ~92% of core prototype complete (need win/lose conditions for MVP)
 
 ---
 
@@ -319,6 +320,7 @@ Add text overlays:
 - "Move mouse to control limb"
 - "Press SPACE to latch"
 - "Press X to detach"
+- "Press Q to toggle position/rotation mode"
 - "Watch your stamina!"
 
 Show on first launch, hide after player understands
@@ -421,6 +423,7 @@ Add challenge:
 - ✓ Hold system
 - ✓ One level
 - ✓ Stamina system
+- ✓ Physics realism (horizontal-only, lean, limb rotation, mode toggle)
 - ⏳ Win condition
 - ✓ Basic UI (StaminaBar)
 
@@ -472,6 +475,7 @@ Add challenge:
 | M3: Holds | Latch system | 2-3h | ✓ Done |
 | M4: Head | Tracking system | 1-3h | ✓ Done |
 | M5: Stamina | Resource management | 2-4h | ✓ Done |
+| M5.6: Physics | Realism rework | 1-2h | ✓ Done |
 | M6: Win/Lose | Complete loop | 1-2h | 🔜 Next |
 | **MVP COMPLETE** | **Playable prototype** | **11-19h total** | **~90% done** |
 | M7: Polish | Juice & feel | 2-4h | 📝 Later |

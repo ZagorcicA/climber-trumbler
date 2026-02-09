@@ -4,7 +4,12 @@ Active problems that need resolution before continuing development.
 
 ---
 
-## ✅ Resolved Issues
+## Resolved Issues
+
+### Player Flying When Dragging Mouse — FIXED
+- **Previously:** MOVE_FORCE (6000) on arm mass 0.4 produced 15,000 px/s^2 acceleration, far exceeding gravity (980), causing player to fly
+- **Fix:** Split into MOVE_FORCE_HORIZONTAL (5000, X-axis only when unattached) and MOVE_FORCE_ATTACHED (3000, full direction when another limb is latched)
+- **Files:** `scripts/player/limb.gd`, `scripts/managers/physics_constants.gd`
 
 ### Head Tracking System — FIXED
 - **Previously:** Head remained in ragdoll state, not responding to tracking commands
@@ -47,4 +52,4 @@ All core systems (physics, limb control, holds, head tracking, stamina) are work
 
 ---
 
-**Last Updated:** February 8, 2026
+**Last Updated:** February 9, 2026

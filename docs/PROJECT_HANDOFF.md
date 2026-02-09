@@ -39,7 +39,7 @@
 ### **Phase 2: Limb Control System** ✓ COMPLETE
 - InputManager singleton (SSOT for all input)
 - Limb selection with keys 1-4
-- Mouse-following physics forces (15000 force)
+- Mouse-following physics forces
 - Visual highlighting for selected limb
 - Smooth, responsive limb movement
 
@@ -54,6 +54,13 @@
 - Head controller script created and working
 - Tracks cursor when limb selected
 - Stays upright when idle
+
+### **Phase 5.6: Physics Realism Rework** ✓ COMPLETE
+- Horizontal-only movement when no limbs latched (prevents flying)
+- Distance-proportional lean/swing when hanging from holds
+- Limb rotation tracking (tips point toward mouse cursor)
+- Position/Rotation mode toggle (Q key)
+- LevelEasy redesigned with 10-hold zig-zag pattern
 
 ---
 
@@ -143,9 +150,21 @@ climber--trumbler/
 - Arms/Legs: 0.4
 
 ### **Limb Movement**
-- MOVE_FORCE: 6000.0 (very high to swing body)
+- MOVE_FORCE_HORIZONTAL: 5000.0 (horizontal-only when unattached)
+- MOVE_FORCE_ATTACHED: 3000.0 (full directional when another limb is latched)
 - MAX_VELOCITY: 800.0
 - DAMPING: 0.99
+
+### **Limb Rotation**
+- LIMB_LOOK_SPEED: 50.0 (angular velocity toward mouse)
+- LIMB_MAX_LOOK_ANGLE: 120.0 degrees
+- LIMB_UPRIGHT_CORRECTION: 5.0
+
+### **Lean/Swing Mechanics** (when hanging from holds)
+- LEAN_FORCE: 2000.0 (torso force, scales with cursor distance)
+- LEAN_TORQUE: 6000.0 (torso lean torque, scales with cursor distance)
+- LEAN_DAMPING: 0.92
+- LEAN_MAX_DISTANCE: 300.0 pixels (distance at full lean strength)
 
 ### **Collision Layers**
 - Layer 1: player_body (all body parts)
@@ -177,8 +196,13 @@ climber--trumbler/
 | Select Limb 4 (Right Leg) | 4 |
 | Latch to Hold | Space |
 | Detach from Hold | X |
+| Toggle Position/Rotation Mode | Q |
 | Restart Level | R |
 | Move Limb | Mouse cursor |
+
+**Movement Modes (toggle with Q):**
+- **Position mode** (default): Mouse moves the selected limb toward cursor + lean applies
+- **Rotation mode**: Mouse only rotates the selected limb to point at cursor (no movement, no lean)
 
 ---
 
@@ -211,12 +235,11 @@ None critical at this time. Head tracking is working. Stamina and win/lose syste
 ### **Why Mouse Control?**
 Chosen over keyboard forces for more intuitive, accessible gameplay. Players can precisely target where they want limbs to go.
 
-### **Why Such High Forces?**
-Force of 15000 needed to overcome:
-- Body mass pulling down due to gravity
-- Joint constraints
-- Damping resistance
-Lower forces made the game feel too heavy and unresponsive.
+### **Why Split Movement Forces?**
+Two force modes prevent the player from flying:
+- **MOVE_FORCE_HORIZONTAL (5000)**: Only X-axis force when no limbs are latched. Gravity handles vertical.
+- **MOVE_FORCE_ATTACHED (3000)**: Full directional force when another limb is anchored to a hold.
+This ensures realistic gravity behavior while still allowing precise limb positioning during climbing.
 
 ### **Why Low Masses?**
 Original masses (Torso: 10kg) made it impossible to swing the body by moving a limb. Reduced to 3kg torso / 0.8kg limbs for dynamic ragdoll feel.

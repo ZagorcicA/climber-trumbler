@@ -157,32 +157,69 @@ Stiff joint (0.1):     Soft joint (0.4):
 
 ### **5. LIMB MOVEMENT FORCE (Mouse Control Strength)**
 
-**Current Value:**
+Movement force is split into two modes to prevent the player from flying:
+
+**Current Values:**
 ```gdscript
 // In scripts/managers/physics_constants.gd
-const MOVE_FORCE = 15000.0
+const MOVE_FORCE_HORIZONTAL = 5000.0  // X-axis only when no limbs latched
+const MOVE_FORCE_ATTACHED = 3000.0    // Full directional when another limb is latched
+const MOVE_FORCE = 6000.0             // Legacy reference value (not used in movement)
 ```
 
 **Where to Edit:**
-- `scripts/managers/physics_constants.gd` — MOVE_FORCE
+- `scripts/managers/physics_constants.gd` — MOVE_FORCE_HORIZONTAL, MOVE_FORCE_ATTACHED
 
-**What It Affects:**
-- How hard the limb pushes toward the mouse cursor
-- ⬆️ Higher = Can swing body easily, very responsive
-- ⬇️ Lower = Limb moves slowly, can't lift body much
-- Must be high enough to overcome gravity + mass + joint constraints
-
-**Recommended Ranges:**
-- 5000 - 10000: Weak, limb barely affects body
-- 10000 - 20000: Medium, can swing body if lighter
-- 20000 - 40000: Strong, can easily lift and swing body
-- 40000+: Very strong, might feel too twitchy
+**What They Affect:**
+- **MOVE_FORCE_HORIZONTAL**: Horizontal-only force when standing on ground (no upward component)
+- **MOVE_FORCE_ATTACHED**: Full directional force when another limb is anchored to a hold
+- The split prevents flying while still allowing precise climbing
 
 **Tips:**
-- If limbs can't swing the body: Increase this
-- If limbs feel too wild/uncontrollable: Decrease this or increase MAX_VELOCITY
-- Heavier bodies need higher force
-- Current value (15000) is tuned for current masses
+- If horizontal sliding feels too slow: Increase MOVE_FORCE_HORIZONTAL
+- If climbing reach feels sluggish: Increase MOVE_FORCE_ATTACHED
+- MOVE_FORCE_ATTACHED should be lower than HORIZONTAL since the anchor provides stability
+
+### **5b. LEAN/SWING MECHANICS (When Hanging from Holds)**
+
+**Current Values:**
+```gdscript
+const LEAN_FORCE = 2000.0       // Torso force toward mouse (at max distance)
+const LEAN_TORQUE = 6000.0      // Torso lean torque (at max distance)
+const LEAN_DAMPING = 0.92       // Pendulum damping per frame
+const LEAN_MAX_DISTANCE = 300.0 // Pixels at which lean reaches full strength
+```
+
+**What They Affect:**
+- **LEAN_FORCE**: How strongly the torso swings toward mouse when hanging
+- **LEAN_TORQUE**: How much the torso tilts/rotates toward mouse direction
+- **LEAN_DAMPING**: How quickly oscillation dies down (lower = more damped)
+- **LEAN_MAX_DISTANCE**: Cursor distance at which lean reaches maximum strength (closer = less lean)
+- Only active when latched AND off ground
+
+**Tips:**
+- If swing is too wild: Reduce LEAN_FORCE/LEAN_TORQUE or lower LEAN_DAMPING
+- If swing is too sluggish: Increase LEAN_FORCE
+- LEAN_MAX_DISTANCE controls the "sensitivity ramp" — lower value = reaches full lean sooner
+
+### **5c. LIMB ROTATION TRACKING**
+
+**Current Values:**
+```gdscript
+const LIMB_LOOK_SPEED = 50.0          // Angular velocity multiplier toward mouse
+const LIMB_MAX_LOOK_ANGLE = 120.0     // Max rotation from upright (degrees)
+const LIMB_UPRIGHT_CORRECTION = 5.0   // Return-to-upright speed when idle
+```
+
+**What They Affect:**
+- **LIMB_LOOK_SPEED**: How quickly the selected limb rotates to point at cursor
+- **LIMB_MAX_LOOK_ANGLE**: Maximum rotation before clamping (prevents unnatural twisting)
+- **LIMB_UPRIGHT_CORRECTION**: How quickly unselected limbs return to vertical
+
+**Tips:**
+- If rotation feels jittery: Reduce LIMB_LOOK_SPEED or increase ANGULAR_DAMP_LIMB
+- If rotation is too slow: Increase LIMB_LOOK_SPEED
+- Limb tips point toward mouse, using `angle() - PI/2` (tip faces DOWN at rotation 0)
 
 ---
 
@@ -404,15 +441,18 @@ const HEAD_MAX_LOOK_ANGLE = 80.0
 ```
 acceleration = force / mass
 
-Example:
-MOVE_FORCE = 15000
-Limb mass = 0.8
-acceleration = 15000 / 0.8 = 18750 pixels/s²
+Example (horizontal, unattached):
+MOVE_FORCE_HORIZONTAL = 5000
+Arm mass = 0.4
+acceleration = 5000 / 0.4 = 12500 pixels/s² (horizontal only)
 
-If you double mass to 1.6:
-acceleration = 15000 / 1.6 = 9375 pixels/s² (half as responsive!)
+Example (attached, climbing):
+MOVE_FORCE_ATTACHED = 3000
+Arm mass = 0.4
+acceleration = 3000 / 0.4 = 7500 pixels/s² (all directions)
 
-Solution: Also double force to maintain same feel.
+Gravity = 980 pixels/s² — attached force can overcome gravity
+but horizontal-only mode cannot (by design).
 ```
 
 ### **Damping over Time**
@@ -485,7 +525,10 @@ Soft joint (0.4):
 - Mass scale 0.1x preserves proportions while keeping gameplay viable
 - Body total: 7.5 game-kg (was 6.2)
 - Soft joints (0.3-0.4 vs original 0.1)
-- High movement force (15000 vs original 500)
+- Split movement forces: horizontal-only (5000) when unattached, directional (3000) when climbing
+- Distance-proportional lean mechanic when hanging (LEAN_FORCE 2000, LEAN_TORQUE 6000)
+- Limb rotation tracking toward cursor (LIMB_LOOK_SPEED 50)
+- Position/Rotation mode toggle (Q key) for precise aiming vs movement
 - Low damping (0.2-0.3 linear, 0.3-0.5 angular)
 - High velocity cap (800 vs original 200)
 
@@ -515,7 +558,7 @@ Soft joint (0.4):
 
 **Recommended:** Save current values before major changes!
 
-Current Working Values (as of last session):
+Current Working Values (as of Phase 5.6):
 ```gdscript
 // Masses (75kg climber at 0.1x scale)
 Torso: 3.8
@@ -536,9 +579,21 @@ Neck: 0.3
 Arms/Legs: 0.4
 
 // Movement (PhysicsConstants)
-MOVE_FORCE: 15000.0
+MOVE_FORCE_HORIZONTAL: 5000.0  // X-only when unattached
+MOVE_FORCE_ATTACHED: 3000.0    // Full directional when climbing
 MAX_VELOCITY: 800.0
 MOVE_DAMPING: 0.99
+
+// Limb Rotation
+LIMB_LOOK_SPEED: 50.0
+LIMB_MAX_LOOK_ANGLE: 120.0
+LIMB_UPRIGHT_CORRECTION: 5.0
+
+// Lean/Swing
+LEAN_FORCE: 2000.0
+LEAN_TORQUE: 6000.0
+LEAN_DAMPING: 0.92
+LEAN_MAX_DISTANCE: 300.0
 
 // All constants in: scripts/managers/physics_constants.gd
 ```
