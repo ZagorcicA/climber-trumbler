@@ -22,8 +22,8 @@ const COLOR_CRITICAL = Color(0.9, 0.1, 0.1)     # Dark red
 
 func _ready():
 	# Initialize bar
-	max_value = 100
-	value = 100
+	max_value = PhysicsConstants.MAX_STAMINA
+	value = PhysicsConstants.MAX_STAMINA
 	show_percentage = false
 
 	# Connect to StaminaManager signals
@@ -45,7 +45,7 @@ func _update_color(stamina_value: float, difficulty: String):
 	"""Set bar color based on position difficulty and stamina level."""
 
 	# Critical stamina overrides position color
-	if stamina_value < 30.0:
+	if stamina_value < PhysicsConstants.STAMINA_WARNING_THRESHOLD:
 		modulate = COLOR_CRITICAL
 		return
 

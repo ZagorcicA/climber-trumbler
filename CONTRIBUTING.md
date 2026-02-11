@@ -158,4 +158,6 @@ We debug systematically:
 4. **Analyze** - Did it work?
 5. **Iterate** - Refine or try next approach
 
-Small, careful steps with clear evidence beat wild experimentation.
+Small, careful steps with clear evidence beat wild experimentation
+
+IDE GAS BRTE

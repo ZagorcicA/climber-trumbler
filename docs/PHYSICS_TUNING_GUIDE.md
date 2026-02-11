@@ -8,13 +8,13 @@ Complete reference for all physics parameters and how to tune the ragdoll feel.
 
 | Want to... | Parameter | Location | Direction |
 |------------|-----------|----------|-----------|
-| Lighter player | Mass | scenes/player/Player.tscn, Limb.tscn | ⬇️ Lower |
-| More power | MOVE_FORCE | scripts/player/limb.gd | ⬆️ Higher |
-| More floppy | Joint softness | scenes/player/Player.tscn (joints) | ⬆️ Higher |
-| More control | Damping | RigidBody2D properties | ⬆️ Higher |
-| Less spinning | Angular damp | RigidBody2D properties | ⬆️ Higher |
-| Faster limbs | MAX_VELOCITY | scripts/player/limb.gd | ⬆️ Higher |
-| Floatier | Gravity scale | RigidBody2D properties | ⬇️ Lower |
+| Lighter player | Mass | `scripts/managers/physics_constants.gd` | ⬇️ Lower |
+| More power | MOVE_FORCE | `scripts/managers/physics_constants.gd` | ⬆️ Higher |
+| More floppy | Joint softness | `scripts/managers/physics_constants.gd` | ⬆️ Higher |
+| More control | Damping | `scripts/managers/physics_constants.gd` | ⬆️ Higher |
+| Less spinning | Angular damp | `scripts/managers/physics_constants.gd` | ⬆️ Higher |
+| Faster limbs | MAX_VELOCITY | `scripts/managers/physics_constants.gd` | ⬆️ Higher |
+| Floatier | Gravity scale | `scripts/managers/physics_constants.gd` | ⬇️ Lower |
 
 ---
 
@@ -24,17 +24,19 @@ Complete reference for all physics parameters and how to tune the ragdoll feel.
 
 **Current Values:**
 ```
-Torso: 3.0 kg
-Head: 2.0 kg (possibly 5.0 - user was experimenting)
-Each Limb: 0.8 kg
-Total Body: ~6.2 kg
+Torso: 3.8 kg
+Head: 0.5 kg
+Arms: 0.4 kg each
+Legs: 1.2 kg each
+Total Body: 7.5 kg
 ```
 
+> Based on 75kg experienced climber at 0.1x game scale
+
+> Arms and legs have different masses (enforced at runtime by player.gd _apply_physics_constants())
+
 **Where to Edit:**
-- Open `scenes/player/Player.tscn` in Godot
-- Select "Torso" or "Head" node in scene tree
-- Inspector → RigidBody2D → Mass
-- For limbs: Open `scenes/player/Limb.tscn` → Select "Limb" root → Mass
+- `scripts/managers/physics_constants.gd` — MASS_HEAD, MASS_TORSO, MASS_ARM, MASS_LEG
 
 **What It Affects:**
 - ⬆️ Higher mass = Harder to move, more momentum, feels "heavy"
@@ -64,8 +66,7 @@ Limbs: 0.2
 ```
 
 **Where to Edit:**
-- Select body part in scene tree
-- Inspector → RigidBody2D → Linear Damp
+- `scripts/managers/physics_constants.gd` — LINEAR_DAMP_TORSO, LINEAR_DAMP_HEAD, LINEAR_DAMP_LIMB
 
 **What It Affects:**
 - Slows down straight-line movement (like air resistance or friction)
@@ -95,8 +96,7 @@ Limbs: 0.3
 ```
 
 **Where to Edit:**
-- Select body part in scene tree
-- Inspector → RigidBody2D → Angular Damp
+- `scripts/managers/physics_constants.gd`
 
 **What It Affects:**
 - Slows down rotation/spinning
@@ -126,9 +126,7 @@ Latch Joints (dynamic): 0.05
 ```
 
 **Where to Edit:**
-- Open `scenes/player/Player.tscn`
-- Select any joint node (e.g., "LeftArmJoint")
-- Inspector → PinJoint2D → Softness
+- `scripts/managers/physics_constants.gd` — JOINT_SOFTNESS_NECK, JOINT_SOFTNESS_ARM, JOINT_SOFTNESS_LEG
 
 **What It Affects:**
 - 0 = Rigid connection (stiff, like a robot)
@@ -159,33 +157,69 @@ Stiff joint (0.1):     Soft joint (0.4):
 
 ### **5. LIMB MOVEMENT FORCE (Mouse Control Strength)**
 
-**Current Value:**
+Movement force is split into two modes to prevent the player from flying:
+
+**Current Values:**
 ```gdscript
-// In scripts/player/limb.gd line 17
-const MOVE_FORCE = 15000.0
+// In scripts/managers/physics_constants.gd
+const MOVE_FORCE_HORIZONTAL = 5000.0  // X-axis only when no limbs latched
+const MOVE_FORCE_ATTACHED = 3000.0    // Full directional when another limb is latched
+const MOVE_FORCE = 6000.0             // Legacy reference value (not used in movement)
 ```
 
 **Where to Edit:**
-- Open `scripts/player/limb.gd` in text editor
-- Line 17: `const MOVE_FORCE = 15000.0`
+- `scripts/managers/physics_constants.gd` — MOVE_FORCE_HORIZONTAL, MOVE_FORCE_ATTACHED
 
-**What It Affects:**
-- How hard the limb pushes toward the mouse cursor
-- ⬆️ Higher = Can swing body easily, very responsive
-- ⬇️ Lower = Limb moves slowly, can't lift body much
-- Must be high enough to overcome gravity + mass + joint constraints
-
-**Recommended Ranges:**
-- 5000 - 10000: Weak, limb barely affects body
-- 10000 - 20000: Medium, can swing body if lighter
-- 20000 - 40000: Strong, can easily lift and swing body
-- 40000+: Very strong, might feel too twitchy
+**What They Affect:**
+- **MOVE_FORCE_HORIZONTAL**: Horizontal-only force when standing on ground (no upward component)
+- **MOVE_FORCE_ATTACHED**: Full directional force when another limb is anchored to a hold
+- The split prevents flying while still allowing precise climbing
 
 **Tips:**
-- If limbs can't swing the body: Increase this
-- If limbs feel too wild/uncontrollable: Decrease this or increase MAX_VELOCITY
-- Heavier bodies need higher force
-- Current value (15000) is tuned for current masses
+- If horizontal sliding feels too slow: Increase MOVE_FORCE_HORIZONTAL
+- If climbing reach feels sluggish: Increase MOVE_FORCE_ATTACHED
+- MOVE_FORCE_ATTACHED should be lower than HORIZONTAL since the anchor provides stability
+
+### **5b. LEAN/SWING MECHANICS (When Hanging from Holds)**
+
+**Current Values:**
+```gdscript
+const LEAN_FORCE = 2000.0       // Torso force toward mouse (at max distance)
+const LEAN_TORQUE = 6000.0      // Torso lean torque (at max distance)
+const LEAN_DAMPING = 0.92       // Pendulum damping per frame
+const LEAN_MAX_DISTANCE = 300.0 // Pixels at which lean reaches full strength
+```
+
+**What They Affect:**
+- **LEAN_FORCE**: How strongly the torso swings toward mouse when hanging
+- **LEAN_TORQUE**: How much the torso tilts/rotates toward mouse direction
+- **LEAN_DAMPING**: How quickly oscillation dies down (lower = more damped)
+- **LEAN_MAX_DISTANCE**: Cursor distance at which lean reaches maximum strength (closer = less lean)
+- Only active when latched AND off ground
+
+**Tips:**
+- If swing is too wild: Reduce LEAN_FORCE/LEAN_TORQUE or lower LEAN_DAMPING
+- If swing is too sluggish: Increase LEAN_FORCE
+- LEAN_MAX_DISTANCE controls the "sensitivity ramp" — lower value = reaches full lean sooner
+
+### **5c. LIMB ROTATION TRACKING**
+
+**Current Values:**
+```gdscript
+const LIMB_LOOK_SPEED = 50.0          // Angular velocity multiplier toward mouse
+const LIMB_MAX_LOOK_ANGLE = 120.0     // Max rotation from upright (degrees)
+const LIMB_UPRIGHT_CORRECTION = 5.0   // Return-to-upright speed when idle
+```
+
+**What They Affect:**
+- **LIMB_LOOK_SPEED**: How quickly the selected limb rotates to point at cursor
+- **LIMB_MAX_LOOK_ANGLE**: Maximum rotation before clamping (prevents unnatural twisting)
+- **LIMB_UPRIGHT_CORRECTION**: How quickly unselected limbs return to vertical
+
+**Tips:**
+- If rotation feels jittery: Reduce LIMB_LOOK_SPEED or increase ANGULAR_DAMP_LIMB
+- If rotation is too slow: Increase LIMB_LOOK_SPEED
+- Limb tips point toward mouse, using `angle() - PI/2` (tip faces DOWN at rotation 0)
 
 ---
 
@@ -193,13 +227,12 @@ const MOVE_FORCE = 15000.0
 
 **Current Value:**
 ```gdscript
-// In scripts/player/limb.gd line 18
+// In scripts/managers/physics_constants.gd
 const MAX_VELOCITY = 800.0
 ```
 
 **Where to Edit:**
-- Open `scripts/player/limb.gd`
-- Line 18: `const MAX_VELOCITY = 800.0`
+- `scripts/managers/physics_constants.gd` — MAX_VELOCITY
 
 **What It Affects:**
 - Maximum speed limb can reach (pixels/second)
@@ -224,13 +257,12 @@ const MAX_VELOCITY = 800.0
 
 **Current Value:**
 ```gdscript
-// In scripts/player/limb.gd line 19
-const DAMPING = 0.99
+// In scripts/managers/physics_constants.gd
+const MOVE_DAMPING = 0.99
 ```
 
 **Where to Edit:**
-- Open `scripts/player/limb.gd`
-- Line 19: `const DAMPING = 0.99`
+- `scripts/managers/physics_constants.gd` — MOVE_DAMPING
 
 **What It Affects:**
 - How much velocity is kept each frame (multiplier)
@@ -256,12 +288,13 @@ const DAMPING = 0.99
 
 **Current Values:**
 ```
-All bodies: 1.0
+ALL bodies: 1.0 (enforced by PhysicsConstants — no floating!)
 ```
 
+> PhysicsConstants.GRAVITY_SCALE = 1.0 is applied to all bodies in player.gd _apply_physics_constants()
+
 **Where to Edit:**
-- Select body part in scene tree
-- Inspector → RigidBody2D → Gravity Scale
+- `scripts/managers/physics_constants.gd`
 
 **What It Affects:**
 - Multiplier for gravity force
@@ -283,26 +316,23 @@ All bodies: 1.0
 
 ---
 
-### **9. HEAD TRACKING PARAMETERS** (⚠️ SYSTEM NOT WORKING)
+### **9. HEAD TRACKING PARAMETERS**
 
 **Current Values:**
 ```gdscript
-// In scripts/player/head.gd lines 10-12
-const LOOK_SPEED = 50.0
-const UPRIGHT_FORCE = 3000.0
-const MAX_LOOK_ANGLE = 80.0
+// In scripts/managers/physics_constants.gd
+const HEAD_LOOK_SPEED = 50.0
+const HEAD_UPRIGHT_FORCE = 3000.0
+const HEAD_MAX_LOOK_ANGLE = 80.0
 ```
 
 **Where to Edit:**
-- Open `scripts/player/head.gd`
-- Lines 10-12
+- `scripts/managers/physics_constants.gd` — HEAD_LOOK_SPEED, HEAD_UPRIGHT_FORCE, HEAD_MAX_LOOK_ANGLE
 
-**What They Should Affect:**
-- **LOOK_SPEED**: How fast head turns to cursor (degrees/sec multiplier)
-- **UPRIGHT_FORCE**: How strongly head returns to upright when idle
-- **MAX_LOOK_ANGLE**: Maximum rotation degrees (prevents "breaking neck")
-
-**Note:** System currently not functional despite being called correctly.
+**What They Affect:**
+- **HEAD_LOOK_SPEED**: How fast head turns to cursor (degrees/sec multiplier)
+- **HEAD_UPRIGHT_FORCE**: How strongly head returns to upright when idle
+- **HEAD_MAX_LOOK_ANGLE**: Maximum rotation degrees (prevents "breaking neck")
 
 ---
 
@@ -411,15 +441,18 @@ const MAX_LOOK_ANGLE = 80.0
 ```
 acceleration = force / mass
 
-Example:
-MOVE_FORCE = 15000
-Limb mass = 0.8
-acceleration = 15000 / 0.8 = 18750 pixels/s²
+Example (horizontal, unattached):
+MOVE_FORCE_HORIZONTAL = 5000
+Arm mass = 0.4
+acceleration = 5000 / 0.4 = 12500 pixels/s² (horizontal only)
 
-If you double mass to 1.6:
-acceleration = 15000 / 1.6 = 9375 pixels/s² (half as responsive!)
+Example (attached, climbing):
+MOVE_FORCE_ATTACHED = 3000
+Arm mass = 0.4
+acceleration = 3000 / 0.4 = 7500 pixels/s² (all directions)
 
-Solution: Also double force to maintain same feel.
+Gravity = 980 pixels/s² — attached force can overcome gravity
+but horizontal-only mode cannot (by design).
 ```
 
 ### **Damping over Time**
@@ -466,7 +499,7 @@ Soft joint (0.4):
 6. Iterate quickly
 
 ### **Script Changes (Requires Reload)**
-1. Edit `scripts/player/limb.gd`
+1. Edit `scripts/managers/physics_constants.gd`
 2. Save file
 3. In Godot: Scene → Reload Saved Scene (Ctrl+R)
 4. Or close and reopen scene
@@ -486,10 +519,16 @@ Soft joint (0.4):
 
 **Goal:** Light, floppy ragdoll that can swing its body around dramatically for momentum-based climbing.
 
+**Basis:** Based on 75kg experienced climber with moderate grip strength.
+
 **Achieved By:**
-- Low masses (body = 6.2kg total vs original 19kg)
+- Mass scale 0.1x preserves proportions while keeping gameplay viable
+- Body total: 7.5 game-kg (was 6.2)
 - Soft joints (0.3-0.4 vs original 0.1)
-- High movement force (15000 vs original 500)
+- Split movement forces: horizontal-only (5000) when unattached, directional (3000) when climbing
+- Distance-proportional lean mechanic when hanging (LEAN_FORCE 2000, LEAN_TORQUE 6000)
+- Limb rotation tracking toward cursor (LIMB_LOOK_SPEED 50)
+- Position/Rotation mode toggle (Q key) for precise aiming vs movement
 - Low damping (0.2-0.3 linear, 0.3-0.5 angular)
 - High velocity cap (800 vs original 200)
 
@@ -519,12 +558,14 @@ Soft joint (0.4):
 
 **Recommended:** Save current values before major changes!
 
-Current Working Values (as of last session):
+Current Working Values (as of Phase 5.6):
 ```gdscript
-// Masses
-Torso: 3.0
-Head: 2.0
-Limbs: 0.8
+// Masses (75kg climber at 0.1x scale)
+Torso: 3.8
+Head: 0.5
+Arms: 0.4 each
+Legs: 1.2 each
+Total: 7.5
 
 // Damping
 Torso/Head linear: 0.3
@@ -537,10 +578,24 @@ Limbs angular: 0.3
 Neck: 0.3
 Arms/Legs: 0.4
 
-// Movement (limb.gd)
-MOVE_FORCE: 15000.0
+// Movement (PhysicsConstants)
+MOVE_FORCE_HORIZONTAL: 5000.0  // X-only when unattached
+MOVE_FORCE_ATTACHED: 3000.0    // Full directional when climbing
 MAX_VELOCITY: 800.0
-DAMPING: 0.99
+MOVE_DAMPING: 0.99
+
+// Limb Rotation
+LIMB_LOOK_SPEED: 50.0
+LIMB_MAX_LOOK_ANGLE: 120.0
+LIMB_UPRIGHT_CORRECTION: 5.0
+
+// Lean/Swing
+LEAN_FORCE: 2000.0
+LEAN_TORQUE: 6000.0
+LEAN_DAMPING: 0.92
+LEAN_MAX_DISTANCE: 300.0
+
+// All constants in: scripts/managers/physics_constants.gd
 ```
 
 ---

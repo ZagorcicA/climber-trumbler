@@ -13,10 +13,6 @@ var latch_joint: PinJoint2D = null
 var nearby_holds: Array = []
 var current_hold = null  # Reference to the hold we're attached to
 
-# Movement parameters
-const MOVE_FORCE = 15000.0  # Much higher force to swing the whole body
-const MAX_VELOCITY = 800.0  # Higher max velocity for dynamic movement
-const DAMPING = 0.99  # Minimal damping for responsive feel
 
 func _ready():
 	# Connect area signals to detect nearby holds
@@ -34,16 +30,16 @@ func _move_toward_target():
 	var distance = global_position.distance_to(target_position)
 
 	# Apply force toward target
-	if distance > 10.0:  # Dead zone to prevent jittering
-		var force = direction * MOVE_FORCE
+	if distance > PhysicsConstants.MOVE_DEAD_ZONE:
+		var force = direction * PhysicsConstants.MOVE_FORCE
 		apply_central_force(force)
 
 	# Limit velocity to prevent wild movements
-	if linear_velocity.length() > MAX_VELOCITY:
-		linear_velocity = linear_velocity.normalized() * MAX_VELOCITY
+	if linear_velocity.length() > PhysicsConstants.MAX_VELOCITY:
+		linear_velocity = linear_velocity.normalized() * PhysicsConstants.MAX_VELOCITY
 
 	# Apply damping for more controlled movement
-	linear_velocity *= DAMPING
+	linear_velocity *= PhysicsConstants.MOVE_DAMPING
 
 func set_selected(selected: bool):
 	is_selected = selected
@@ -76,7 +72,7 @@ func latch_to_hold(hold):
 	latch_joint.global_position = hold.get_attach_position()
 	latch_joint.node_a = get_path()
 	latch_joint.node_b = hold.get_path()
-	latch_joint.softness = 0.05
+	latch_joint.softness = PhysicsConstants.JOINT_SOFTNESS_LATCH
 
 	# Store reference and notify hold
 	current_hold = hold

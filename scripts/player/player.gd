@@ -15,10 +15,6 @@ var selected_limb_index: int = -1
 var torso_on_ground: bool = false  # Tracks if torso is touching floor/ground
 var legs_on_ground: int = 0  # Count of legs touching the floor
 
-const STAND_SUPPORT_FORCE = 2500.0  # Upward force when legs grounded
-const STAND_UPRIGHT_TORQUE = 8000.0  # Torque to keep torso vertical
-const STAND_DAMPING = 0.85  # Reduce horizontal sliding
-
 func _ready():
 	# Register all limbs in order: 1=LeftArm, 2=RightArm, 3=LeftLeg, 4=RightLeg
 	limbs = [left_arm, right_arm, left_leg, right_leg]
@@ -52,13 +48,13 @@ func _physics_process(_delta):
 
 	# Upward support force (like "leg muscles")
 	var support_multiplier = 1.0 if legs_on_ground >= 2 else 0.6
-	torso.apply_central_force(Vector2(0, -STAND_SUPPORT_FORCE * support_multiplier))
+	torso.apply_central_force(Vector2(0, -PhysicsConstants.STAND_SUPPORT_FORCE * support_multiplier))
 
 	# Upright torque correction (proportional controller)
-	torso.apply_torque(-torso.rotation * STAND_UPRIGHT_TORQUE)
+	torso.apply_torque(-torso.rotation * PhysicsConstants.STAND_UPRIGHT_TORQUE)
 
 	# Horizontal damping to prevent sliding
-	torso.linear_velocity.x *= STAND_DAMPING
+	torso.linear_velocity.x *= PhysicsConstants.STAND_DAMPING
 
 func _handle_limb_selection():
 	# Use InputManager for centralized input handling (SSOT)
