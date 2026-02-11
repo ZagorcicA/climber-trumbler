@@ -3,10 +3,10 @@
 [ext_resource type="Script" path="res://scripts/ui/stamina_bar.gd" id="1_stamina_bar"]
 
 [node name="StaminaBar" type="ProgressBar"]
-offset_left = 476.0
-offset_top = 20.0
-offset_right = 676.0
-offset_bottom = 47.0
+anchor_left = 0.03
+anchor_right = 0.97
+offset_top = 15.0
+offset_bottom = 42.0
 value = 100.0
 show_percentage = false
 script = ExtResource("1_stamina_bar")
