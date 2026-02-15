@@ -21,8 +21,7 @@ func _ready():
 
 func _physics_process(_delta):
 	if is_selected and not is_latched:
-		# Move limb toward mouse position
-		target_position = InputManager.get_target_world_position()
+		# target_position is set by Player each frame
 		_move_toward_target()
 
 func _move_toward_target():
