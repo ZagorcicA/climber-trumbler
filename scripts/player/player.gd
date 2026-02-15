@@ -12,6 +12,8 @@ extends Node2D
 
 var limbs: Array = []
 var selected_limb_index: int = -1
+var selection_source: String = "keyboard"  # "keyboard" or "touch"
+var _was_touch_active: bool = false
 var torso_on_ground: bool = false  # Tracks if torso is touching floor/ground
 var legs_on_ground: int = 0  # Count of legs touching the floor
 
@@ -19,9 +21,8 @@ func _ready():
 	# Register all limbs in order: 1=LeftArm, 2=RightArm, 3=LeftLeg, 4=RightLeg
 	limbs = [left_arm, right_arm, left_leg, right_leg]
 
-	# Select first limb by default
-	if limbs.size() > 0:
-		select_limb(0)
+	# No limb selected by default — player selects via touch
+	selected_limb_index = -1
 
 	# Connect to stamina depletion signal
 	StaminaManager.stamina_depleted.connect(_on_stamina_depleted)
@@ -57,10 +58,28 @@ func _physics_process(_delta):
 	torso.linear_velocity.x *= PhysicsConstants.STAND_DAMPING
 
 func _handle_limb_selection():
-	# Use InputManager for centralized input handling (SSOT)
+	# KEYBOARD: existing behavior preserved
 	var limb_index = InputManager.limb_selection_pressed
 	if limb_index >= 0 and limb_index < limbs.size():
 		select_limb(limb_index)
+		selection_source = "keyboard"
+		_was_touch_active = InputManager.is_touch_active
+		return
+
+	# TOUCH: detect finger-down (rising edge)
+	var touch_active = InputManager.is_touch_active
+	if touch_active and not _was_touch_active:
+		var touch_world_pos = InputManager.get_target_world_position()
+		var nearest_index = _find_nearest_limb(touch_world_pos)
+		if nearest_index >= 0:
+			select_limb(nearest_index)
+			selection_source = "touch"
+
+	# TOUCH: deselect on finger-up (only if touch-selected)
+	if not touch_active and _was_touch_active and selection_source == "touch":
+		select_limb(-1)
+
+	_was_touch_active = touch_active
 
 func _handle_limb_actions():
 	# Handle latch and detach actions
@@ -97,14 +116,24 @@ func get_selected_limb():
 		return limbs[selected_limb_index]
 	return null
 
+func _find_nearest_limb(world_pos: Vector2) -> int:
+	var best_index: int = -1
+	var best_distance: float = PhysicsConstants.TOUCH_SELECT_RADIUS
+	for i in range(limbs.size()):
+		var distance = world_pos.distance_to(limbs[i].global_position)
+		if distance < best_distance:
+			best_distance = distance
+			best_index = i
+	return best_index
+
 func _update_head_tracking():
 	"""Update head to look at cursor when limb is selected, or stay upright when idle"""
 	var selected = get_selected_limb()
 
 	if selected and not selected.is_latched:
 		# Limb is selected and moving - head tracks cursor
-		var mouse_pos = InputManager.get_mouse_world_position()
-		head.track_position(mouse_pos)
+		var target_pos = InputManager.get_target_world_position()
+		head.track_position(target_pos)
 	else:
 		# No limb selected or limb is latched - head stays upright
 		head.stop_tracking()

@@ -66,8 +66,8 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(400, 80)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_colors/font_hover_color = Color(0.1, 0.1, 0.15, 1)
-theme_override_colors/font_color = Color(0.1, 0.1, 0.15, 1)
+theme_override_colors/font_hover_color = Color(0.727265, 0.797482, 0.928117, 1)
+theme_override_colors/font_color = Color(0.653357, 0.768848, 0.788124, 1)
 theme_override_font_sizes/font_size = 28
 text = "Easy level"
 
@@ -76,8 +76,8 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(400, 80)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_colors/font_hover_color = Color(0.1, 0.1, 0.15, 1)
-theme_override_colors/font_color = Color(0.1, 0.1, 0.15, 1)
+theme_override_colors/font_hover_color = Color(0.727265, 0.797482, 0.928117, 1)
+theme_override_colors/font_color = Color(0.653357, 0.768848, 0.788124, 1)
 theme_override_font_sizes/font_size = 28
 text = "Normal level"
 
@@ -86,8 +86,8 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(400, 80)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_colors/font_hover_color = Color(0.1, 0.1, 0.15, 1)
-theme_override_colors/font_color = Color(0.1, 0.1, 0.15, 1)
+theme_override_colors/font_hover_color = Color(0.727265, 0.797482, 0.928117, 1)
+theme_override_colors/font_color = Color(0.653357, 0.768848, 0.788124, 1)
 theme_override_font_sizes/font_size = 28
 text = "Hard level"
 

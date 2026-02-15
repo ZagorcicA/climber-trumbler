@@ -7,10 +7,25 @@ extends Node
 # Mouse state
 var mouse_position: Vector2 = Vector2.ZERO
 
+# Touch state
+var is_touch_active: bool = false
+var touch_screen_position: Vector2 = Vector2.ZERO
+
 # Input state for limb controls
 var latch_just_pressed: bool = false
 var detach_just_pressed: bool = false
 var limb_selection_pressed: int = -1  # 0-3 for limbs 1-4, -1 for none
+
+func _input(event: InputEvent):
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			is_touch_active = true
+			touch_screen_position = event.position
+		else:
+			is_touch_active = false
+	elif event is InputEventScreenDrag:
+		if is_touch_active:
+			touch_screen_position = event.position
 
 func _process(_delta):
 	# Update mouse position
@@ -44,3 +59,9 @@ func get_mouse_world_position() -> Vector2:
 	if camera:
 		return camera.get_global_mouse_position()
 	return mouse_position
+
+func get_target_world_position() -> Vector2:
+	if is_touch_active:
+		var canvas_transform = get_viewport().get_canvas_transform()
+		return canvas_transform.affine_inverse() * touch_screen_position
+	return get_mouse_world_position()

@@ -22,7 +22,7 @@ func _ready():
 func _physics_process(_delta):
 	if is_selected and not is_latched:
 		# Move limb toward mouse position
-		target_position = get_global_mouse_position()
+		target_position = InputManager.get_target_world_position()
 		_move_toward_target()
 
 func _move_toward_target():
