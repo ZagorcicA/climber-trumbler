@@ -72,11 +72,19 @@ func _handle_limb_selection():
 		var touch_world_pos = InputManager.get_target_world_position()
 		var nearest_index = _find_nearest_limb(touch_world_pos)
 		if nearest_index >= 0:
+			if limbs[nearest_index].is_latched:
+				# Tap a latched limb → detach and start moving
+				limbs[nearest_index].detach_from_hold()
 			select_limb(nearest_index)
 			selection_source = "touch"
 
-	# TOUCH: deselect on finger-up (only if touch-selected)
+	# TOUCH: finger-up → try to latch, then deselect
 	if not touch_active and _was_touch_active and selection_source == "touch":
+		var selected = get_selected_limb()
+		if selected and not selected.is_latched and StaminaManager.can_latch():
+			var nearest_hold = selected.get_nearest_hold()
+			if nearest_hold:
+				selected.latch_to_hold(nearest_hold)
 		select_limb(-1)
 
 	_was_touch_active = touch_active
