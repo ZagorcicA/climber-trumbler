@@ -14,6 +14,7 @@ var limbs: Array = []
 var selected_limb_index: int = -1
 var selection_source: String = "keyboard"  # "keyboard" or "touch"
 var _was_touch_active: bool = false
+var _prev_limb_key_held: int = -1
 var torso_on_ground: bool = false  # Tracks if torso is touching floor/ground
 var legs_on_ground: int = 0  # Count of legs touching the floor
 
@@ -58,13 +59,23 @@ func _physics_process(_delta):
 	torso.linear_velocity.x *= PhysicsConstants.STAND_DAMPING
 
 func _handle_limb_selection():
-	# KEYBOARD: existing behavior preserved
-	var limb_index = InputManager.limb_selection_pressed
-	if limb_index >= 0 and limb_index < limbs.size():
-		select_limb(limb_index)
+	# KEYBOARD: hold-to-select with edge detection
+	var key_held = InputManager.limb_key_held
+	if key_held >= 0 and key_held != _prev_limb_key_held:
+		# Key just pressed → detach if latched, then select
+		if limbs[key_held].is_latched:
+			limbs[key_held].detach_from_hold()
+		select_limb(key_held)
 		selection_source = "keyboard"
-		_was_touch_active = InputManager.is_touch_active
-		return
+	elif key_held < 0 and _prev_limb_key_held >= 0 and selection_source == "keyboard":
+		# Key just released → try latch, then deselect
+		var selected = get_selected_limb()
+		if selected and not selected.is_latched and StaminaManager.can_latch():
+			var nearest_hold = selected.get_nearest_hold()
+			if nearest_hold:
+				selected.latch_to_hold(nearest_hold)
+		select_limb(-1)
+	_prev_limb_key_held = key_held
 
 	# TOUCH: detect finger-down (rising edge)
 	var touch_active = InputManager.is_touch_active
