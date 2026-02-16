@@ -11,17 +11,16 @@ extends Node2D
 @onready var right_leg = $RightLeg
 
 var limbs: Array = []
-var selected_limb_index: int = -1
+var touch_limb_map: Dictionary = {}      # finger_index → limb_index
+var _prev_touch_fingers: Array = []      # previous frame's active finger indices
+var keyboard_selected_indices: Array = []  # keyboard-controlled limb indices
+var _prev_limb_keys_held: Array = []
 var torso_on_ground: bool = false  # Tracks if torso is touching floor/ground
 var legs_on_ground: int = 0  # Count of legs touching the floor
 
 func _ready():
-	# Register all limbs in order: 1=LeftArm, 2=RightArm, 3=LeftLeg, 4=RightLeg
+	# Register all limbs in order: 0=LeftArm, 1=RightArm, 2=LeftLeg, 3=RightLeg
 	limbs = [left_arm, right_arm, left_leg, right_leg]
-
-	# Select first limb by default
-	if limbs.size() > 0:
-		select_limb(0)
 
 	# Connect to stamina depletion signal
 	StaminaManager.stamina_depleted.connect(_on_stamina_depleted)
@@ -57,66 +56,137 @@ func _physics_process(_delta):
 	torso.linear_velocity.x *= PhysicsConstants.STAND_DAMPING
 
 func _handle_limb_selection():
-	# Use InputManager for centralized input handling (SSOT)
-	var limb_index = InputManager.limb_selection_pressed
-	if limb_index >= 0 and limb_index < limbs.size():
-		select_limb(limb_index)
+	_handle_keyboard_selection()
+	_handle_touch_selection()
+	_update_limb_targets()
+
+func _handle_keyboard_selection():
+	var keys_held = InputManager.limb_keys_held
+
+	# Rising edge: newly pressed keys → detach if latched, select
+	for key in keys_held:
+		if key not in _prev_limb_keys_held:
+			if limbs[key].is_latched:
+				limbs[key].detach_from_hold()
+			if key not in keyboard_selected_indices:
+				keyboard_selected_indices.append(key)
+			limbs[key].set_selected(true)
+
+	# Falling edge: released keys → try latch, deselect
+	for key in _prev_limb_keys_held:
+		if key not in keys_held:
+			var limb = limbs[key]
+			if not limb.is_latched and StaminaManager.can_latch():
+				var nearest_hold = limb.get_nearest_hold()
+				if nearest_hold:
+					limb.latch_to_hold(nearest_hold)
+			limb.set_selected(false)
+			keyboard_selected_indices.erase(key)
+
+	_prev_limb_keys_held = keys_held.duplicate()
+
+func _handle_touch_selection():
+	var curr_fingers = InputManager.active_touches.keys()
+
+	# New fingers (rising edge) — find and bind limbs
+	for finger in curr_fingers:
+		if finger not in _prev_touch_fingers and finger not in touch_limb_map:
+			var world_pos = InputManager.screen_to_world(InputManager.active_touches[finger])
+			var excluded = touch_limb_map.values()
+			excluded.append_array(keyboard_selected_indices)
+			var nearest = _find_nearest_limb(world_pos, excluded)
+			if nearest >= 0:
+				if limbs[nearest].is_latched:
+					limbs[nearest].detach_from_hold()
+				limbs[nearest].set_selected(true)
+				touch_limb_map[finger] = nearest
+
+	# Released fingers (falling edge) — latch and unbind
+	for finger in _prev_touch_fingers:
+		if finger not in curr_fingers and finger in touch_limb_map:
+			var limb_index = touch_limb_map[finger]
+			var limb = limbs[limb_index]
+			if not limb.is_latched and StaminaManager.can_latch():
+				var nearest_hold = limb.get_nearest_hold()
+				if nearest_hold:
+					limb.latch_to_hold(nearest_hold)
+			limb.set_selected(false)
+			touch_limb_map.erase(finger)
+
+	_prev_touch_fingers = curr_fingers.duplicate()
+
+func _update_limb_targets():
+	# Touch-controlled limbs
+	for finger in touch_limb_map:
+		var limb_index = touch_limb_map[finger]
+		var screen_pos = InputManager.active_touches.get(finger)
+		if screen_pos:
+			limbs[limb_index].target_position = InputManager.screen_to_world(screen_pos)
+
+	# Keyboard-controlled limbs all follow mouse
+	var mouse_pos = InputManager.get_mouse_world_position()
+	for limb_index in keyboard_selected_indices:
+		limbs[limb_index].target_position = mouse_pos
 
 func _handle_limb_actions():
-	# Handle latch and detach actions
-	var selected = get_selected_limb()
-	if not selected:
+	# Handle latch and detach actions (keyboard Space/X) for all keyboard-selected limbs
+	if keyboard_selected_indices.is_empty():
 		return
 
-	# Latch selected limb to nearest hold
-	if InputManager.latch_just_pressed:
-		# Check if player has enough stamina to latch
-		if not StaminaManager.can_latch():
-			return
+	if InputManager.latch_just_pressed and StaminaManager.can_latch():
+		for limb_index in keyboard_selected_indices:
+			var limb = limbs[limb_index]
+			if not limb.is_latched:
+				var nearest_hold = limb.get_nearest_hold()
+				if nearest_hold:
+					limb.latch_to_hold(nearest_hold)
 
-		var nearest_hold = selected.get_nearest_hold()
-		if nearest_hold:
-			selected.latch_to_hold(nearest_hold)
-
-	# Detach selected limb
 	if InputManager.detach_just_pressed:
-		selected.detach_from_hold()
-
-func select_limb(index: int):
-	# Deselect previous limb
-	if selected_limb_index >= 0 and selected_limb_index < limbs.size():
-		limbs[selected_limb_index].set_selected(false)
-
-	# Select new limb
-	selected_limb_index = index
-	if selected_limb_index >= 0 and selected_limb_index < limbs.size():
-		limbs[selected_limb_index].set_selected(true)
+		for limb_index in keyboard_selected_indices:
+			limbs[limb_index].detach_from_hold()
 
 func get_selected_limb():
-	if selected_limb_index >= 0 and selected_limb_index < limbs.size():
-		return limbs[selected_limb_index]
+	if not keyboard_selected_indices.is_empty():
+		return limbs[keyboard_selected_indices[0]]
 	return null
 
-func _update_head_tracking():
-	"""Update head to look at cursor when limb is selected, or stay upright when idle"""
-	var selected = get_selected_limb()
+func _find_nearest_limb(world_pos: Vector2, exclude: Array = []) -> int:
+	var best_index: int = -1
+	var best_distance: float = PhysicsConstants.TOUCH_SELECT_RADIUS
+	for i in range(limbs.size()):
+		if i in exclude:
+			continue
+		var distance = world_pos.distance_to(limbs[i].global_position)
+		if distance < best_distance:
+			best_distance = distance
+			best_index = i
+	return best_index
 
-	if selected and not selected.is_latched:
-		# Limb is selected and moving - head tracks cursor
-		var mouse_pos = InputManager.get_mouse_world_position()
-		head.track_position(mouse_pos)
+func _update_head_tracking():
+	var track_pos = null
+
+	# Prefer touch targets
+	if not touch_limb_map.is_empty():
+		var finger = touch_limb_map.keys()[0]
+		var screen_pos = InputManager.active_touches.get(finger)
+		if screen_pos:
+			track_pos = InputManager.screen_to_world(screen_pos)
+	# Fall back to keyboard/mouse
+	elif not keyboard_selected_indices.is_empty():
+		for idx in keyboard_selected_indices:
+			if not limbs[idx].is_latched:
+				track_pos = InputManager.get_mouse_world_position()
+				break
+
+	if track_pos:
+		head.track_position(track_pos)
 	else:
-		# No limb selected or limb is latched - head stays upright
 		head.stop_tracking()
 
 func _is_grounded() -> bool:
 	return torso_on_ground or legs_on_ground > 0
 
 func _update_stamina(delta: float):
-	"""
-	Update stamina system based on current limb configuration.
-	Counts which limbs are latched and passes to StaminaManager.
-	"""
 	# Count latched arms (indices 0-1) and gather hold difficulty multipliers
 	var arms_latched = 0
 	var hold_drain_multiplier = 0.0
@@ -150,32 +220,18 @@ func _update_stamina(delta: float):
 	StaminaManager.update_stamina(delta, arms_latched, legs_latched, _is_grounded(), avg_hold_multiplier)
 
 func _on_stamina_depleted():
-	"""
-	Called when stamina reaches 0.
-	Detaches all limbs, causing player to fall.
-	"""
 	# Detach all latched limbs
 	for limb in limbs:
 		if limb.is_latched:
 			limb.detach_from_hold()
 
 func _on_torso_body_entered(body: Node):
-	"""
-	Called when Torso starts colliding with something.
-	Check if it's the floor (layer 2) to determine if player is grounded.
-	"""
 	if body is StaticBody2D:
-		# Check if body is on layer 2 (environment/floor)
-		if body.collision_layer & 2:  # Bitwise check for layer 2
+		if body.collision_layer & 2:
 			torso_on_ground = true
 
 func _on_torso_body_exited(body: Node):
-	"""
-	Called when Torso stops colliding with something.
-	Update grounded state if leaving the floor.
-	"""
 	if body is StaticBody2D:
-		# Check if body was on layer 2 (environment/floor)
 		if body.collision_layer & 2:
 			torso_on_ground = false
 

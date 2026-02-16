@@ -126,3 +126,8 @@ const HOLD_DRAIN_EASY: float = 0.25        # Jug holds, low grip demand
 const HOLD_DRAIN_MEDIUM: float = 1.5       # Moderate grip demand
 const HOLD_DRAIN_HARD: float = 2.5         # Crimps/slopers, high grip demand
 
+# ============================================================
+# TOUCH INPUT
+# ============================================================
+const TOUCH_SELECT_RADIUS: float = 70.0    # px — tap detection radius (generous for fat fingers)
+

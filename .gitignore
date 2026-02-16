@@ -31,5 +31,7 @@ Dev Log/
 
 # Export templates and builds
 /export/
+/build/
+export_presets.cfg
 *.pck
 *.zip
