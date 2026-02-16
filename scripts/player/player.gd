@@ -42,6 +42,8 @@ func _process(delta):
 	_update_stamina(delta)
 
 func _physics_process(_delta):
+	_clamp_torso_above_holds()
+
 	if legs_on_ground <= 0:
 		return
 
@@ -54,6 +56,31 @@ func _physics_process(_delta):
 
 	# Horizontal damping to prevent sliding
 	torso.linear_velocity.x *= PhysicsConstants.STAND_DAMPING
+
+func _clamp_torso_above_holds():
+	# Prevent cartwheeling: when arms are latched, the torso can't rise above
+	# the hold point. This stops free limbs (legs) from pulling the body over.
+	var arm_hold_y_sum = 0.0
+	var arm_hold_count = 0
+
+	for i in [0, 1]:  # Arms only (indices 0=LeftArm, 1=RightArm)
+		var limb = limbs[i]
+		if limb.is_latched and limb.current_hold and is_instance_valid(limb.current_hold):
+			arm_hold_y_sum += limb.current_hold.global_position.y
+			arm_hold_count += 1
+
+	if arm_hold_count == 0:
+		return
+
+	# Allow torso up to just below the hold (20px ≈ chest-to-hand distance)
+	var hold_y = arm_hold_y_sum / arm_hold_count
+	var min_torso_y = hold_y - 20.0
+
+	if torso.global_position.y < min_torso_y:
+		# Hard clamp: snap torso back to the ceiling and kill upward velocity
+		torso.global_position.y = min_torso_y
+		if torso.linear_velocity.y < 0:
+			torso.linear_velocity.y = 0
 
 func _handle_limb_selection():
 	_handle_keyboard_selection()
@@ -81,6 +108,7 @@ func _handle_keyboard_selection():
 				if nearest_hold:
 					limb.latch_to_hold(nearest_hold)
 			limb.set_selected(false)
+			limb.force_divisor = 1
 			keyboard_selected_indices.erase(key)
 
 	_prev_limb_keys_held = keys_held.duplicate()
@@ -123,10 +151,15 @@ func _update_limb_targets():
 		if screen_pos:
 			limbs[limb_index].target_position = InputManager.screen_to_world(screen_pos)
 
-	# Keyboard-controlled limbs all follow mouse
+	# Keyboard-controlled limbs all follow mouse — share force to prevent flying
 	var mouse_pos = InputManager.get_mouse_world_position()
+	var active_keyboard_count = 0
+	for limb_index in keyboard_selected_indices:
+		if not limbs[limb_index].is_latched:
+			active_keyboard_count += 1
 	for limb_index in keyboard_selected_indices:
 		limbs[limb_index].target_position = mouse_pos
+		limbs[limb_index].force_divisor = max(1, active_keyboard_count)
 
 func _handle_limb_actions():
 	# Handle latch and detach actions (keyboard Space/X) for all keyboard-selected limbs

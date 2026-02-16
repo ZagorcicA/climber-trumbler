@@ -13,6 +13,7 @@ var active_touches: Dictionary = {}  # finger_index (int) → screen_position (V
 # Input state for limb controls
 var latch_just_pressed: bool = false
 var detach_just_pressed: bool = false
+var both_arms_latch_just_pressed: bool = false
 var limb_keys_held: Array = []  # Limb indices currently held via keyboard
 
 func _input(event: InputEvent):
@@ -32,6 +33,7 @@ func _process(_delta):
 	# Reset per-frame input flags
 	latch_just_pressed = false
 	detach_just_pressed = false
+	both_arms_latch_just_pressed = false
 
 	# Check latch/detach inputs
 	if Input.is_action_just_pressed("latch_limb"):
@@ -39,6 +41,9 @@ func _process(_delta):
 
 	if Input.is_action_just_pressed("detach_limb"):
 		detach_just_pressed = true
+
+	if Input.is_action_just_pressed("both_arms_latch"):
+		both_arms_latch_just_pressed = true
 
 	# Check which limb keys are held (multiple allowed simultaneously)
 	limb_keys_held = []
