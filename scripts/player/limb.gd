@@ -12,6 +12,7 @@ var target_position: Vector2 = Vector2.ZERO
 var latch_joint: PinJoint2D = null
 var nearby_holds: Array = []
 var current_hold = null  # Reference to the hold we're attached to
+var force_divisor: int = 1  # Set by Player to split force across co-moving limbs
 
 
 func _ready():
@@ -28,9 +29,9 @@ func _move_toward_target():
 	var direction = (target_position - global_position).normalized()
 	var distance = global_position.distance_to(target_position)
 
-	# Apply force toward target
+	# Apply force toward target, divided by number of co-moving limbs
 	if distance > PhysicsConstants.MOVE_DEAD_ZONE:
-		var force = direction * PhysicsConstants.MOVE_FORCE
+		var force = direction * PhysicsConstants.MOVE_FORCE / force_divisor
 		apply_central_force(force)
 
 	# Limit velocity to prevent wild movements
