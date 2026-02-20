@@ -4,8 +4,6 @@ extends Node2D
 # Draws skeleton lines, joint dots, CoM indicator, and trail
 
 var bodies: Array = []
-var masses: Array = []
-var total_mass: float = 0.0
 
 var trail: Array = []
 var frame_counter: int = 0
@@ -30,16 +28,6 @@ func _ready():
 		player.get_node("LeftLeg"),
 		player.get_node("RightLeg"),
 	]
-	masses = [
-		PhysicsConstants.MASS_TORSO,
-		PhysicsConstants.MASS_HEAD,
-		PhysicsConstants.MASS_ARM,
-		PhysicsConstants.MASS_ARM,
-		PhysicsConstants.MASS_LEG,
-		PhysicsConstants.MASS_LEG,
-	]
-	for m in masses:
-		total_mass += m
 
 	torso = bodies[0]
 	joint_neck = PhysicsConstants.JOINT_POS_NECK
@@ -57,7 +45,8 @@ func _physics_process(delta):
 		if trail.size() > PhysicsConstants.COM_TRAIL_LENGTH:
 			trail.resize(PhysicsConstants.COM_TRAIL_LENGTH)
 
-	ring_phase += delta * 3.0
+	var pulse_speed = lerp(3.0, 8.0, 1.0 - CenterOfMassManager.stamina_ratio)
+	ring_phase += delta * pulse_speed
 	if ring_phase > TAU:
 		ring_phase -= TAU
 
@@ -107,14 +96,22 @@ func _draw():
 		var pos = to_local(body.global_position)
 		draw_circle(pos, joint_radius, joint_color)
 
-	# Center of mass
+	# Stamina-driven color
+	var ratio = CenterOfMassManager.stamina_ratio
+	var com_color: Color
+	if ratio > 0.5:
+		com_color = PhysicsConstants.COM_COLOR_FRESH.lerp(PhysicsConstants.COM_COLOR_TIRED, (1.0 - ratio) * 2.0)
+	else:
+		com_color = PhysicsConstants.COM_COLOR_TIRED.lerp(PhysicsConstants.COM_COLOR_CRITICAL, (0.5 - ratio) * 2.0)
+
+	# Center of mass (uses effective position with stamina sag)
 	var com_global = _calculate_com_global()
 	var com_local = to_local(com_global)
 
-	# Trail (fading magenta dots)
+	# Trail (fading dots using stamina color)
 	for i in range(trail.size()):
 		var alpha = lerp(0.6, 0.05, float(i) / float(PhysicsConstants.COM_TRAIL_LENGTH))
-		var trail_color = Color(PhysicsConstants.COM_DOT_COLOR.r, PhysicsConstants.COM_DOT_COLOR.g, PhysicsConstants.COM_DOT_COLOR.b, alpha)
+		var trail_color = Color(com_color.r, com_color.g, com_color.b, alpha)
 		var radius = lerp(5.0, 2.0, float(i) / float(PhysicsConstants.COM_TRAIL_LENGTH))
 		draw_circle(to_local(trail[i]), radius, trail_color)
 
@@ -123,17 +120,15 @@ func _draw():
 	draw_line(com_local + Vector2(-ch, 0), com_local + Vector2(ch, 0), PhysicsConstants.COM_CROSSHAIR_COLOR, 1.0)
 	draw_line(com_local + Vector2(0, -ch), com_local + Vector2(0, ch), PhysicsConstants.COM_CROSSHAIR_COLOR, 1.0)
 
-	# Pulsing ring
+	# Pulsing ring (stamina color, lower alpha)
 	var pulse = (sin(ring_phase) + 1.0) * 0.5
 	var ring_radius = lerp(PhysicsConstants.COM_RING_MIN_RADIUS, PhysicsConstants.COM_RING_MAX_RADIUS, pulse)
-	draw_arc(com_local, ring_radius, 0, TAU, 32, PhysicsConstants.COM_RING_COLOR, 2.0)
+	var ring_color = Color(com_color.r, com_color.g, com_color.b, 0.3)
+	draw_arc(com_local, ring_radius, 0, TAU, 32, ring_color, 2.0)
 
 	# CoM dot (drawn last, on top)
-	draw_circle(com_local, PhysicsConstants.COM_DOT_RADIUS, PhysicsConstants.COM_DOT_COLOR)
+	draw_circle(com_local, PhysicsConstants.COM_DOT_RADIUS, com_color)
 
 
 func _calculate_com_global() -> Vector2:
-	var weighted_sum = Vector2.ZERO
-	for i in range(bodies.size()):
-		weighted_sum += masses[i] * bodies[i].global_position
-	return weighted_sum / total_mass
+	return CenterOfMassManager.effective_com_position

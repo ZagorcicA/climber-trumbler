@@ -12,7 +12,7 @@ extends Node
 # ============================================================
 const GRAVITY: float = 980.0              # pixels/s² (Godot default, 9.8 m/s² at 100px/m)
 const PIXELS_PER_METER: float = 100.0
-const GRAVITY_SCALE: float = 0.3          # Torso gravity scale for floaty climbing feel
+const GRAVITY_SCALE: float = 0.55         # Torso gravity scale — heavier sloppy feel
 
 # ============================================================
 # CLIMBER PROFILE
@@ -24,11 +24,11 @@ const GRIP_STRENGTH: float = 45.0         # kg-force, experienced moderate grip
 # ============================================================
 # BODY PART MASSES (game-scale, proportional to 75kg human)
 # ============================================================
-const MASS_HEAD: float = 2.0
-const MASS_TORSO: float = 8.0
-const MASS_ARM: float = 3.0
-const MASS_LEG: float = 3.0
-# Total: 2.0 + 8.0 + (3.0 * 4) = 22.0
+const MASS_HEAD: float = 1.8
+const MASS_TORSO: float = 9.5
+const MASS_ARM: float = 1.1
+const MASS_LEG: float = 3.85
+# Total: 1.8 + 9.5 + (1.1 * 2) + (3.85 * 2) = 21.2
 
 # ============================================================
 # BODY PART POSITIONS (relative to torso center, pixels)
@@ -79,7 +79,9 @@ const JOINT_POS_RIGHT_LEG: Vector2 = Vector2(22, 50)
 # MOVEMENT FORCES
 # ============================================================
 const MOVE_FORCE: float = 15000.0         # Force limb applies toward mouse
+const MOVE_FORCE_EXHAUSTED: float = 5000.0 # Force at 0 stamina (sluggish response)
 const MAX_VELOCITY: float = 800.0          # Limb speed cap (pixels/s)
+const MAX_VELOCITY_EXHAUSTED: float = 350.0 # Speed cap at 0 stamina
 const MOVE_DAMPING: float = 0.99           # Velocity retention per frame
 const MOVE_DEAD_ZONE: float = 10.0         # Pixels before force applies
 
@@ -87,7 +89,7 @@ const MOVE_DEAD_ZONE: float = 10.0         # Pixels before force applies
 # STANDING SUPPORT
 # ============================================================
 const STAND_SUPPORT_FORCE: float = 2500.0
-const STAND_UPRIGHT_TORQUE: float = 8000.0
+const STAND_UPRIGHT_TORQUE: float = 5000.0
 const STAND_DAMPING: float = 0.85
 
 # ============================================================
@@ -102,8 +104,8 @@ const HEAD_UPRIGHT_CORRECTION: float = 10.0
 # STAMINA CONFIGURATION
 # ============================================================
 const MAX_STAMINA: float = 100.0
-const BASE_DRAIN_RATE: float = 10.0        # Per second when latched
-const BASE_REGEN_RATE: float = 15.0        # Per second when not latched
+const BASE_DRAIN_RATE: float = 15.0        # Per second when latched
+const BASE_REGEN_RATE: float = 10.0        # Per second when not latched
 const MIN_LATCH_STAMINA: float = 5.0       # Can't latch below this
 const STAMINA_WARNING_THRESHOLD: float = 30.0
 
@@ -130,6 +132,24 @@ const HOLD_DRAIN_HARD: float = 2.5         # Crimps/slopers, high grip demand
 # TOUCH INPUT
 # ============================================================
 const TOUCH_SELECT_RADIUS: float = 70.0    # px — tap detection radius (generous for fat fingers)
+
+# ============================================================
+# CENTER OF MASS PHYSICS
+# ============================================================
+const COM_TORQUE_STRENGTH: float = 5500.0    # Barn-door torque when hanging off-center
+const COM_TORQUE_DAMPING: float = 0.94       # Angular velocity retention (higher = more swing)
+const COM_MAX_OFFSET: float = 130.0          # Pixels — offset where torque saturates
+const COM_TORQUE_RAMP: float = 1.0           # Exponent (1.0=linear — reactive to small offsets)
+
+# STAMINA → CoM COUPLING
+const COM_STAMINA_SAG_MAX: float = 80.0              # Max downward CoM offset (px) at 0 stamina
+const COM_TORQUE_STRENGTH_EXHAUSTED: float = 8500.0  # Torque at 0 stamina (stronger pendulum)
+const COM_TORQUE_DAMPING_EXHAUSTED: float = 0.97     # Damping at 0 stamina (barely dampened)
+
+# STAMINA COLORS (shared by stamina bar + CoM display)
+const COM_COLOR_FRESH: Color = Color(0.2, 0.9, 0.4, 0.85)     # Green — full stamina
+const COM_COLOR_TIRED: Color = Color(1.0, 0.7, 0.2, 0.85)     # Orange — mid stamina
+const COM_COLOR_CRITICAL: Color = Color(0.9, 0.1, 0.1, 0.85)  # Red — low stamina
 
 # ============================================================
 # CENTER OF MASS VISUALIZATION

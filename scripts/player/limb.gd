@@ -29,14 +29,19 @@ func _move_toward_target():
 	var direction = (target_position - global_position).normalized()
 	var distance = global_position.distance_to(target_position)
 
+	# Stamina scaling — tired limbs respond slower to input
+	var ratio = CenterOfMassManager.stamina_ratio
+	var move_force = lerp(PhysicsConstants.MOVE_FORCE_EXHAUSTED, PhysicsConstants.MOVE_FORCE, ratio)
+	var max_vel = lerp(PhysicsConstants.MAX_VELOCITY_EXHAUSTED, PhysicsConstants.MAX_VELOCITY, ratio)
+
 	# Apply force toward target, divided by number of co-moving limbs
 	if distance > PhysicsConstants.MOVE_DEAD_ZONE:
-		var force = direction * PhysicsConstants.MOVE_FORCE / force_divisor
+		var force = direction * move_force / force_divisor
 		apply_central_force(force)
 
 	# Limit velocity to prevent wild movements
-	if linear_velocity.length() > PhysicsConstants.MAX_VELOCITY:
-		linear_velocity = linear_velocity.normalized() * PhysicsConstants.MAX_VELOCITY
+	if linear_velocity.length() > max_vel:
+		linear_velocity = linear_velocity.normalized() * max_vel
 
 	# Apply damping for more controlled movement
 	linear_velocity *= PhysicsConstants.MOVE_DAMPING

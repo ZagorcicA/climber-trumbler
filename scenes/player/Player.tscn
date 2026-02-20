@@ -17,8 +17,8 @@ script = ExtResource("1_player")
 
 [node name="Torso" type="RigidBody2D" parent="."]
 collision_mask = 2
-mass = 8.0
-gravity_scale = 0.3
+mass = 9.5
+gravity_scale = 0.55
 contact_monitor = true
 max_contacts_reported = 4
 linear_damp = 1.0
@@ -38,7 +38,7 @@ metadata/_edit_use_anchors_ = true
 [node name="Head" type="RigidBody2D" parent="."]
 position = Vector2(0, -60)
 collision_mask = 2
-mass = 2.0
+mass = 1.8
 linear_damp = 0.3
 angular_damp = 0.1
 script = ExtResource("3_head")

@@ -18,9 +18,30 @@ var _prev_limb_keys_held: Array = []
 var torso_on_ground: bool = false  # Tracks if torso is touching floor/ground
 var legs_on_ground: int = 0  # Count of legs touching the floor
 
+# CoM physics data (set in _ready)
+var _com_bodies: Array = []
+var _com_masses: Array = []
+var _com_total: float = 0.0
+
 func _ready():
 	# Register all limbs in order: 0=LeftArm, 1=RightArm, 2=LeftLeg, 3=RightLeg
 	limbs = [left_arm, right_arm, left_leg, right_leg]
+
+	# Set differentiated limb masses (arms lighter, legs heavier)
+	left_arm.mass = PhysicsConstants.MASS_ARM
+	right_arm.mass = PhysicsConstants.MASS_ARM
+	left_leg.mass = PhysicsConstants.MASS_LEG
+	right_leg.mass = PhysicsConstants.MASS_LEG
+
+	# Build CoM body/mass arrays for the manager
+	_com_bodies = [torso, head, left_arm, right_arm, left_leg, right_leg]
+	_com_masses = [
+		PhysicsConstants.MASS_TORSO, PhysicsConstants.MASS_HEAD,
+		PhysicsConstants.MASS_ARM, PhysicsConstants.MASS_ARM,
+		PhysicsConstants.MASS_LEG, PhysicsConstants.MASS_LEG,
+	]
+	for m in _com_masses:
+		_com_total += m
 
 	# Connect to stamina depletion signal
 	StaminaManager.stamina_depleted.connect(_on_stamina_depleted)
@@ -42,20 +63,46 @@ func _process(delta):
 	_update_stamina(delta)
 
 func _physics_process(_delta):
+	# Feed CoM manager every frame
+	CenterOfMassManager.update_com(_com_bodies, _com_masses, _com_total)
+
+	var latched_positions: Array = []
+	for limb in limbs:
+		if limb.is_latched and limb.current_hold and is_instance_valid(limb.current_hold):
+			latched_positions.append(limb.current_hold.global_position)
+	CenterOfMassManager.update_support(latched_positions)
+
+	CenterOfMassManager.update_stamina_ratio(StaminaManager.current_stamina / PhysicsConstants.MAX_STAMINA)
+	CenterOfMassManager.update_effective_com()
+
 	_clamp_torso_above_holds()
 
-	if legs_on_ground <= 0:
-		return
+	if legs_on_ground > 0:
+		# Upward support force (like "leg muscles")
+		var support_multiplier = 1.0 if legs_on_ground >= 2 else 0.6
+		torso.apply_central_force(Vector2(0, -PhysicsConstants.STAND_SUPPORT_FORCE * support_multiplier))
 
-	# Upward support force (like "leg muscles")
-	var support_multiplier = 1.0 if legs_on_ground >= 2 else 0.6
-	torso.apply_central_force(Vector2(0, -PhysicsConstants.STAND_SUPPORT_FORCE * support_multiplier))
+		# Upright torque correction (proportional controller)
+		torso.apply_torque(-torso.rotation * PhysicsConstants.STAND_UPRIGHT_TORQUE)
 
-	# Upright torque correction (proportional controller)
-	torso.apply_torque(-torso.rotation * PhysicsConstants.STAND_UPRIGHT_TORQUE)
+		# Horizontal damping to prevent sliding
+		torso.linear_velocity.x *= PhysicsConstants.STAND_DAMPING
+	elif CenterOfMassManager.support_count > 0:
+		_apply_com_torque()
 
-	# Horizontal damping to prevent sliding
-	torso.linear_velocity.x *= PhysicsConstants.STAND_DAMPING
+
+func _apply_com_torque():
+	var offset = CenterOfMassManager.com_offset_horizontal
+	# Normalize by max offset, clamp to [-1, 1]
+	var normalized = clampf(offset / PhysicsConstants.COM_MAX_OFFSET, -1.0, 1.0)
+	# Apply power curve for non-linear ramp
+	var factor = sign(normalized) * pow(abs(normalized), PhysicsConstants.COM_TORQUE_RAMP)
+	# Stamina scaling — tired = stronger pendulum, less damping
+	var ratio = CenterOfMassManager.stamina_ratio
+	var strength = lerp(PhysicsConstants.COM_TORQUE_STRENGTH_EXHAUSTED, PhysicsConstants.COM_TORQUE_STRENGTH, ratio)
+	var damping = lerp(PhysicsConstants.COM_TORQUE_DAMPING_EXHAUSTED, PhysicsConstants.COM_TORQUE_DAMPING, ratio)
+	torso.apply_torque(factor * strength)
+	torso.angular_velocity *= damping
 
 func _clamp_torso_above_holds():
 	# Prevent cartwheeling: when arms are latched, the torso can't rise above
