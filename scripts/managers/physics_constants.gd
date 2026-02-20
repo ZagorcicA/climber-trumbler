@@ -131,3 +131,20 @@ const HOLD_DRAIN_HARD: float = 2.5         # Crimps/slopers, high grip demand
 # ============================================================
 const TOUCH_SELECT_RADIUS: float = 70.0    # px — tap detection radius (generous for fat fingers)
 
+# ============================================================
+# CENTER OF MASS VISUALIZATION
+# ============================================================
+const COM_LINE_WIDTH: float = 2.0
+const COM_LINE_COLOR: Color = Color(0.0, 0.9, 0.9, 0.35)
+const COM_JOINT_RADIUS: float = 4.0
+const COM_JOINT_COLOR: Color = Color(0.0, 1.0, 1.0, 0.6)
+const COM_DOT_RADIUS: float = 8.0
+const COM_DOT_COLOR: Color = Color(1.0, 0.2, 0.4, 0.85)
+const COM_RING_COLOR: Color = Color(1.0, 0.2, 0.4, 0.3)
+const COM_RING_MIN_RADIUS: float = 12.0
+const COM_RING_MAX_RADIUS: float = 16.0
+const COM_CROSSHAIR_COLOR: Color = Color(1.0, 1.0, 1.0, 0.3)
+const COM_CROSSHAIR_SIZE: float = 12.0
+const COM_TRAIL_LENGTH: int = 10
+const COM_TRAIL_SAMPLE_INTERVAL: int = 3
+
