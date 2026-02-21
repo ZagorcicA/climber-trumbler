@@ -143,8 +143,9 @@ const COM_TORQUE_RAMP: float = 1.0           # Exponent (1.0=linear — reactive
 
 # STAMINA → CoM COUPLING
 const COM_STAMINA_SAG_MAX: float = 80.0              # Max downward CoM offset (px) at 0 stamina
-const COM_TORQUE_STRENGTH_EXHAUSTED: float = 8500.0  # Torque at 0 stamina (stronger pendulum)
-const COM_TORQUE_DAMPING_EXHAUSTED: float = 0.97     # Damping at 0 stamina (barely dampened)
+const COM_TORQUE_STRENGTH_EXHAUSTED: float = 16000.0  # Torque at 0 stamina (violent pendulum)
+const COM_TORQUE_DAMPING_EXHAUSTED: float = 0.995     # Damping at 0 stamina (almost no friction)
+const COM_TORQUE_RAMP_EXHAUSTED: float = 0.3          # Cube-root-like — tiny offset = huge torque
 
 # STAMINA COLORS (shared by stamina bar + CoM display)
 const COM_COLOR_FRESH: Color = Color(0.2, 0.9, 0.4, 0.85)     # Green — full stamina
@@ -165,6 +166,19 @@ const COM_RING_MIN_RADIUS: float = 12.0
 const COM_RING_MAX_RADIUS: float = 16.0
 const COM_CROSSHAIR_COLOR: Color = Color(1.0, 1.0, 1.0, 0.3)
 const COM_CROSSHAIR_SIZE: float = 12.0
+const COM_DOT_RADIUS_EXHAUSTED: float = 16.0          # Dot: 8→16px when tired
+const COM_RING_MIN_RADIUS_EXHAUSTED: float = 20.0     # Ring inner: 12→20px
+const COM_RING_MAX_RADIUS_EXHAUSTED: float = 28.0     # Ring outer: 16→28px
+const COM_TRAIL_DOT_SCALE_EXHAUSTED: float = 1.8      # Trail dots 1.8x bigger when tired
 const COM_TRAIL_LENGTH: int = 10
 const COM_TRAIL_SAMPLE_INTERVAL: int = 3
+
+# HORIZONTAL OVERSHOOT (pendulum feel when tired)
+const COM_OVERSHOOT_GAIN: float = 1.2                # CoM velocity → overshoot amount (wild)
+const COM_OVERSHOOT_DECAY: float = 0.985             # Per-frame return to center (very slow decay)
+const COM_OVERSHOOT_MAX: float = 120.0               # Max horizontal drift (px)
+
+# PENDULUM ROPE VISUAL
+const COM_ROPE_WIDTH_MAX: float = 3.0                # Rope thickness at 0 stamina
+const COM_ANCHOR_RADIUS: float = 5.0                 # Anchor dot at ideal CoM position
 

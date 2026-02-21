@@ -104,15 +104,38 @@ func _draw():
 	else:
 		com_color = PhysicsConstants.COM_COLOR_TIRED.lerp(PhysicsConstants.COM_COLOR_CRITICAL, (0.5 - ratio) * 2.0)
 
-	# Center of mass (uses effective position with stamina sag)
+	# Anchor = torso center (the rope hangs from the body's core)
+	var anchor_local = to_local(torso.global_position)
+
+	# Effective CoM (sagged + overshoot — the swinging rock)
 	var com_global = _calculate_com_global()
 	var com_local = to_local(com_global)
 
-	# Trail (fading dots using stamina color)
+	# Stamina-scaled sizes (grow when tired)
+	var tiredness = 1.0 - ratio
+	var dot_radius = lerp(PhysicsConstants.COM_DOT_RADIUS_EXHAUSTED, PhysicsConstants.COM_DOT_RADIUS, ratio)
+	var ring_min = lerp(PhysicsConstants.COM_RING_MIN_RADIUS_EXHAUSTED, PhysicsConstants.COM_RING_MIN_RADIUS, ratio)
+	var ring_max = lerp(PhysicsConstants.COM_RING_MAX_RADIUS_EXHAUSTED, PhysicsConstants.COM_RING_MAX_RADIUS, ratio)
+	var trail_scale = lerp(PhysicsConstants.COM_TRAIL_DOT_SCALE_EXHAUSTED, 1.0, ratio)
+
+	# Pendulum rope (anchor → swinging rock, fades in with tiredness)
+	if tiredness > 0.05:
+		var rope_alpha = tiredness * 0.8
+		var rope_color = Color(com_color.r, com_color.g, com_color.b, rope_alpha)
+		var rope_width = lerp(1.0, PhysicsConstants.COM_ROPE_WIDTH_MAX, tiredness)
+		draw_line(anchor_local, com_local, rope_color, rope_width)
+
+		# Anchor dot (ideal CoM — small, white-ish, marks the pivot)
+		var anchor_alpha = tiredness * 0.6
+		var anchor_color = Color(1.0, 1.0, 1.0, anchor_alpha)
+		var anchor_radius = lerp(2.0, PhysicsConstants.COM_ANCHOR_RADIUS, tiredness)
+		draw_circle(anchor_local, anchor_radius, anchor_color)
+
+	# Trail (fading dots using stamina color, scaled by tiredness)
 	for i in range(trail.size()):
 		var alpha = lerp(0.6, 0.05, float(i) / float(PhysicsConstants.COM_TRAIL_LENGTH))
 		var trail_color = Color(com_color.r, com_color.g, com_color.b, alpha)
-		var radius = lerp(5.0, 2.0, float(i) / float(PhysicsConstants.COM_TRAIL_LENGTH))
+		var radius = lerp(5.0, 2.0, float(i) / float(PhysicsConstants.COM_TRAIL_LENGTH)) * trail_scale
 		draw_circle(to_local(trail[i]), radius, trail_color)
 
 	# Crosshair
@@ -120,14 +143,14 @@ func _draw():
 	draw_line(com_local + Vector2(-ch, 0), com_local + Vector2(ch, 0), PhysicsConstants.COM_CROSSHAIR_COLOR, 1.0)
 	draw_line(com_local + Vector2(0, -ch), com_local + Vector2(0, ch), PhysicsConstants.COM_CROSSHAIR_COLOR, 1.0)
 
-	# Pulsing ring (stamina color, lower alpha)
+	# Pulsing ring (stamina color, lower alpha, grows when tired)
 	var pulse = (sin(ring_phase) + 1.0) * 0.5
-	var ring_radius = lerp(PhysicsConstants.COM_RING_MIN_RADIUS, PhysicsConstants.COM_RING_MAX_RADIUS, pulse)
+	var ring_radius = lerp(ring_min, ring_max, pulse)
 	var ring_color = Color(com_color.r, com_color.g, com_color.b, 0.3)
 	draw_arc(com_local, ring_radius, 0, TAU, 32, ring_color, 2.0)
 
-	# CoM dot (drawn last, on top)
-	draw_circle(com_local, PhysicsConstants.COM_DOT_RADIUS, com_color)
+	# CoM dot (drawn last, on top — the heavy swinging rock)
+	draw_circle(com_local, dot_radius, com_color)
 
 
 func _calculate_com_global() -> Vector2:

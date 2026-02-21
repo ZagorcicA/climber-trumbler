@@ -18,7 +18,12 @@ var com_offset_horizontal: float = 0.0
 
 # Stamina-driven CoM state
 var stamina_ratio: float = 1.0              # 1.0=full, 0.0=empty
-var effective_com_position: Vector2         # com_position + stamina sag offset
+var effective_com_position: Vector2         # com_position + stamina sag + overshoot
+
+# Horizontal overshoot tracking
+var _prev_com_x: float = 0.0
+var _com_velocity_x: float = 0.0
+var _effective_offset_x: float = 0.0
 
 
 func update_stamina_ratio(ratio: float) -> void:
@@ -27,7 +32,16 @@ func update_stamina_ratio(ratio: float) -> void:
 
 func update_effective_com() -> void:
 	var sag = (1.0 - stamina_ratio) * PhysicsConstants.COM_STAMINA_SAG_MAX
-	effective_com_position = com_position + Vector2(0, sag)
+	var tiredness = 1.0 - stamina_ratio
+
+	# Track horizontal velocity and accumulate overshoot
+	_com_velocity_x = com_position.x - _prev_com_x
+	_prev_com_x = com_position.x
+	_effective_offset_x += _com_velocity_x * PhysicsConstants.COM_OVERSHOOT_GAIN * tiredness
+	_effective_offset_x *= PhysicsConstants.COM_OVERSHOOT_DECAY
+	_effective_offset_x = clampf(_effective_offset_x, -PhysicsConstants.COM_OVERSHOOT_MAX, PhysicsConstants.COM_OVERSHOOT_MAX)
+
+	effective_com_position = com_position + Vector2(_effective_offset_x * tiredness, sag)
 
 
 func update_com(bodies: Array, masses: Array, total_mass: float) -> void:

@@ -95,10 +95,11 @@ func _apply_com_torque():
 	var offset = CenterOfMassManager.com_offset_horizontal
 	# Normalize by max offset, clamp to [-1, 1]
 	var normalized = clampf(offset / PhysicsConstants.COM_MAX_OFFSET, -1.0, 1.0)
-	# Apply power curve for non-linear ramp
-	var factor = sign(normalized) * pow(abs(normalized), PhysicsConstants.COM_TORQUE_RAMP)
-	# Stamina scaling — tired = stronger pendulum, less damping
+	# Stamina scaling — tired = stronger pendulum, less damping, sub-linear ramp
 	var ratio = CenterOfMassManager.stamina_ratio
+	var ramp = lerp(PhysicsConstants.COM_TORQUE_RAMP_EXHAUSTED, PhysicsConstants.COM_TORQUE_RAMP, ratio)
+	# Apply power curve (sqrt when exhausted — small offsets create big torque)
+	var factor = sign(normalized) * pow(abs(normalized), ramp)
 	var strength = lerp(PhysicsConstants.COM_TORQUE_STRENGTH_EXHAUSTED, PhysicsConstants.COM_TORQUE_STRENGTH, ratio)
 	var damping = lerp(PhysicsConstants.COM_TORQUE_DAMPING_EXHAUSTED, PhysicsConstants.COM_TORQUE_DAMPING, ratio)
 	torso.apply_torque(factor * strength)

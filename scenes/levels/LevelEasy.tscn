@@ -44,13 +44,13 @@ script = ExtResource("5_camera")
 anchors_preset = -1
 
 [node name="Hold1" parent="." instance=ExtResource("3_x4u4f")]
-position = Vector2(674, 503)
+position = Vector2(632, 525)
 
 [node name="Hold2" parent="." instance=ExtResource("3_x4u4f")]
-position = Vector2(472, 437)
+position = Vector2(461, 356)
 
 [node name="Hold3" parent="." instance=ExtResource("3_x4u4f")]
-position = Vector2(646, 282)
+position = Vector2(662, 325)
 
 [node name="Hold4" parent="." instance=ExtResource("3_x4u4f")]
 position = Vector2(477, 267)
