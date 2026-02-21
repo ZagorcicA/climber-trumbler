@@ -65,35 +65,46 @@ func _draw():
 	var r_hp = to_local(torso.to_global(joint_r_hip))
 	var hip_mid = (l_hp + r_hp) * 0.5
 
-	# Body part positions
+	# Limb top (joint end) and tip (hand/foot) — follows limb rotation
 	var head_pos = to_local(bodies[1].global_position)
-	var l_arm_pos = to_local(bodies[2].global_position)
-	var r_arm_pos = to_local(bodies[3].global_position)
-	var l_leg_pos = to_local(bodies[4].global_position)
-	var r_leg_pos = to_local(bodies[5].global_position)
+	var l_arm_top = to_local(bodies[2].to_global(Vector2(0, -40)))
+	var l_arm_tip = to_local(bodies[2].get_node("GrabArea").global_position)
+	var r_arm_top = to_local(bodies[3].to_global(Vector2(0, -40)))
+	var r_arm_tip = to_local(bodies[3].get_node("GrabArea").global_position)
+	var l_leg_top = to_local(bodies[4].to_global(Vector2(0, -40)))
+	var l_leg_tip = to_local(bodies[4].get_node("GrabArea").global_position)
+	var r_leg_top = to_local(bodies[5].to_global(Vector2(0, -40)))
+	var r_leg_tip = to_local(bodies[5].get_node("GrabArea").global_position)
 
 	var line_color = PhysicsConstants.COM_LINE_COLOR
 	var line_width = PhysicsConstants.COM_LINE_WIDTH
 
-	# 8 anatomical skeleton segments
+	# Skeleton: torso structure
 	draw_line(neck, head_pos, line_color, line_width)        # Neck → Head
 	draw_line(l_sh, r_sh, line_color, line_width)            # Shoulder bar
-	draw_line(l_sh, l_arm_pos, line_color, line_width)       # L.shoulder → L.arm
-	draw_line(r_sh, r_arm_pos, line_color, line_width)       # R.shoulder → R.arm
 	draw_line(neck, hip_mid, line_color, line_width)          # Spine
 	draw_line(l_hp, r_hp, line_color, line_width)            # Hip bar
-	draw_line(l_hp, l_leg_pos, line_color, line_width)       # L.hip → L.leg
-	draw_line(r_hp, r_leg_pos, line_color, line_width)       # R.hip → R.leg
 
-	# Joint anchor dots (5 joints)
+	# Skeleton: connectors (torso joint → limb top) + limb axis (top → tip)
+	draw_line(l_sh, l_arm_top, line_color, line_width)       # L.shoulder → L.arm top
+	draw_line(l_arm_top, l_arm_tip, line_color, line_width)  # L.arm along sprite
+	draw_line(r_sh, r_arm_top, line_color, line_width)       # R.shoulder → R.arm top
+	draw_line(r_arm_top, r_arm_tip, line_color, line_width)  # R.arm along sprite
+	draw_line(l_hp, l_leg_top, line_color, line_width)       # L.hip → L.leg top
+	draw_line(l_leg_top, l_leg_tip, line_color, line_width)  # L.leg along sprite
+	draw_line(r_hp, r_leg_top, line_color, line_width)       # R.hip → R.leg top
+	draw_line(r_leg_top, r_leg_tip, line_color, line_width)  # R.leg along sprite
+
+	# Joint anchor dots
 	var joint_color = PhysicsConstants.COM_JOINT_COLOR
 	var joint_radius = PhysicsConstants.COM_JOINT_RADIUS
 	for pos in [neck, l_sh, r_sh, l_hp, r_hp]:
 		draw_circle(pos, joint_radius, joint_color)
 
-	# Body part dots (6 body centers)
-	for body in bodies:
-		var pos = to_local(body.global_position)
+	# Body part dots (torso/head center, limb tops + tips)
+	draw_circle(to_local(bodies[0].global_position), joint_radius, joint_color)
+	draw_circle(head_pos, joint_radius, joint_color)
+	for pos in [l_arm_top, l_arm_tip, r_arm_top, r_arm_tip, l_leg_top, l_leg_tip, r_leg_top, r_leg_tip]:
 		draw_circle(pos, joint_radius, joint_color)
 
 	# Stamina-driven color

@@ -44,11 +44,19 @@ func update_effective_com() -> void:
 	effective_com_position = com_position + Vector2(_effective_offset_x * tiredness, sag)
 
 
+var _first_update: bool = true
+
 func update_com(bodies: Array, masses: Array, total_mass: float) -> void:
 	var weighted_sum = Vector2.ZERO
 	for i in range(bodies.size()):
 		weighted_sum += masses[i] * bodies[i].global_position
-	com_position = weighted_sum / total_mass
+	var raw = weighted_sum / total_mass
+
+	if _first_update:
+		com_position = raw
+		_first_update = false
+	else:
+		com_position = com_position.lerp(raw, PhysicsConstants.COM_SMOOTHING)
 
 
 func update_support(latched_positions: Array) -> void:

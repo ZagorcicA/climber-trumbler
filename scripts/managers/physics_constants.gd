@@ -182,3 +182,6 @@ const COM_OVERSHOOT_MAX: float = 120.0               # Max horizontal drift (px)
 const COM_ROPE_WIDTH_MAX: float = 3.0                # Rope thickness at 0 stamina
 const COM_ANCHOR_RADIUS: float = 5.0                 # Anchor dot at ideal CoM position
 
+# COM INERTIA (smoothing — lower = more sluggish, less mouse-reactive)
+const COM_SMOOTHING: float = 0.08                    # Exponential lerp weight per frame
+
