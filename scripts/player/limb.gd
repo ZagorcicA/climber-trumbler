@@ -13,6 +13,7 @@ var latch_joint: PinJoint2D = null
 var nearby_holds: Array = []
 var current_hold = null  # Reference to the hold we're attached to
 var force_divisor: int = 1  # Set by Player to split force across co-moving limbs
+var upper_segment: RigidBody2D = null  # Set by Player — the upper limb in the chain
 
 
 func _ready():
@@ -34,10 +35,15 @@ func _move_toward_target():
 	var move_force = lerp(PhysicsConstants.MOVE_FORCE_EXHAUSTED, PhysicsConstants.MOVE_FORCE, ratio)
 	var max_vel = lerp(PhysicsConstants.MAX_VELOCITY_EXHAUSTED, PhysicsConstants.MAX_VELOCITY, ratio)
 
-	# Apply force toward target, divided by number of co-moving limbs
+	# Apply force toward target, scaled by distance to prevent oscillation up close
 	if distance > PhysicsConstants.MOVE_DEAD_ZONE:
-		var force = direction * move_force / force_divisor
-		apply_central_force(force)
+		var distance_factor = clampf((distance - PhysicsConstants.MOVE_DEAD_ZONE) / PhysicsConstants.MOVE_FORCE_RAMP, 0.0, 1.0)
+		var force = direction * move_force * distance_factor / force_divisor
+		if upper_segment:
+			apply_central_force(force * 0.7)
+			upper_segment.apply_central_force(force * 0.3)
+		else:
+			apply_central_force(force)
 
 	# Limit velocity to prevent wild movements
 	if linear_velocity.length() > max_vel:
@@ -54,13 +60,14 @@ func get_nearest_hold():
 	if nearby_holds.is_empty():
 		return null
 
-	# Find closest hold
+	# Find closest hold to the hand/foot tip (GrabArea), not the body center
+	var hand_pos = grab_area.global_position
 	var closest_hold = null
 	var closest_distance = INF
 
 	for hold in nearby_holds:
 		if hold and is_instance_valid(hold):
-			var distance = global_position.distance_to(hold.global_position)
+			var distance = hand_pos.distance_to(hold.global_position)
 			if distance < closest_distance:
 				closest_distance = distance
 				closest_hold = hold

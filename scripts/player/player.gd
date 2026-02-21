@@ -9,6 +9,10 @@ extends Node2D
 @onready var right_arm = $RightArm
 @onready var left_leg = $LeftLeg
 @onready var right_leg = $RightLeg
+@onready var upper_left_arm = $UpperLeftArm
+@onready var upper_right_arm = $UpperRightArm
+@onready var upper_left_leg = $UpperLeftLeg
+@onready var upper_right_leg = $UpperRightLeg
 
 var limbs: Array = []
 var touch_limb_map: Dictionary = {}      # finger_index → limb_index
@@ -27,21 +31,37 @@ func _ready():
 	# Register all limbs in order: 0=LeftArm, 1=RightArm, 2=LeftLeg, 3=RightLeg
 	limbs = [left_arm, right_arm, left_leg, right_leg]
 
-	# Set differentiated limb masses (arms lighter, legs heavier)
-	left_arm.mass = PhysicsConstants.MASS_ARM
-	right_arm.mass = PhysicsConstants.MASS_ARM
-	left_leg.mass = PhysicsConstants.MASS_LEG
-	right_leg.mass = PhysicsConstants.MASS_LEG
+	# Set split limb masses (upper + lower = original total)
+	upper_left_arm.mass = PhysicsConstants.MASS_UPPER_ARM
+	upper_right_arm.mass = PhysicsConstants.MASS_UPPER_ARM
+	left_arm.mass = PhysicsConstants.MASS_FOREARM
+	right_arm.mass = PhysicsConstants.MASS_FOREARM
+	upper_left_leg.mass = PhysicsConstants.MASS_THIGH
+	upper_right_leg.mass = PhysicsConstants.MASS_THIGH
+	left_leg.mass = PhysicsConstants.MASS_SHIN
+	right_leg.mass = PhysicsConstants.MASS_SHIN
 
-	# Build CoM body/mass arrays for the manager
-	_com_bodies = [torso, head, left_arm, right_arm, left_leg, right_leg]
+	# Build CoM body/mass arrays for the manager (10 bodies)
+	_com_bodies = [
+		torso, head,
+		upper_left_arm, left_arm, upper_right_arm, right_arm,
+		upper_left_leg, left_leg, upper_right_leg, right_leg,
+	]
 	_com_masses = [
 		PhysicsConstants.MASS_TORSO, PhysicsConstants.MASS_HEAD,
-		PhysicsConstants.MASS_ARM, PhysicsConstants.MASS_ARM,
-		PhysicsConstants.MASS_LEG, PhysicsConstants.MASS_LEG,
+		PhysicsConstants.MASS_UPPER_ARM, PhysicsConstants.MASS_FOREARM,
+		PhysicsConstants.MASS_UPPER_ARM, PhysicsConstants.MASS_FOREARM,
+		PhysicsConstants.MASS_THIGH, PhysicsConstants.MASS_SHIN,
+		PhysicsConstants.MASS_THIGH, PhysicsConstants.MASS_SHIN,
 	]
 	for m in _com_masses:
 		_com_total += m
+
+	# Wire upper_segment references so limbs distribute force through the chain
+	left_arm.upper_segment = upper_left_arm
+	right_arm.upper_segment = upper_right_arm
+	left_leg.upper_segment = upper_left_leg
+	right_leg.upper_segment = upper_right_leg
 
 	# Connect to stamina depletion signal
 	StaminaManager.stamina_depleted.connect(_on_stamina_depleted)
@@ -76,6 +96,7 @@ func _physics_process(_delta):
 	CenterOfMassManager.update_effective_com()
 
 	_clamp_torso_above_holds()
+	_enforce_joint_limits()
 
 	if legs_on_ground > 0:
 		# Upward support force (like "leg muscles")
@@ -87,6 +108,9 @@ func _physics_process(_delta):
 
 		# Horizontal damping to prevent sliding
 		torso.linear_velocity.x *= PhysicsConstants.STAND_DAMPING
+
+		# Straighten knees and keep thighs vertical
+		_straighten_legs_for_standing()
 	elif CenterOfMassManager.support_count > 0:
 		_apply_com_torque()
 
@@ -104,6 +128,46 @@ func _apply_com_torque():
 	var damping = lerp(PhysicsConstants.COM_TORQUE_DAMPING_EXHAUSTED, PhysicsConstants.COM_TORQUE_DAMPING, ratio)
 	torso.apply_torque(factor * strength)
 	torso.angular_velocity *= damping
+
+func _enforce_joint_limits():
+	# Shoulders: upper arms relative to torso
+	_limit_angle_pair(upper_left_arm, torso, PhysicsConstants.SHOULDER_ANGLE_MIN, PhysicsConstants.SHOULDER_ANGLE_MAX, PhysicsConstants.JOINT_LIMIT_TORQUE, PhysicsConstants.JOINT_LIMIT_DAMPING)
+	_limit_angle_pair(upper_right_arm, torso, PhysicsConstants.SHOULDER_ANGLE_MIN, PhysicsConstants.SHOULDER_ANGLE_MAX, PhysicsConstants.JOINT_LIMIT_TORQUE, PhysicsConstants.JOINT_LIMIT_DAMPING)
+	# Elbows: forearms relative to upper arms
+	_limit_angle_pair(left_arm, upper_left_arm, PhysicsConstants.ELBOW_ANGLE_MIN, PhysicsConstants.ELBOW_ANGLE_MAX, PhysicsConstants.ELBOW_KNEE_LIMIT_TORQUE, PhysicsConstants.ELBOW_KNEE_LIMIT_DAMPING)
+	_limit_angle_pair(right_arm, upper_right_arm, PhysicsConstants.ELBOW_ANGLE_MIN, PhysicsConstants.ELBOW_ANGLE_MAX, PhysicsConstants.ELBOW_KNEE_LIMIT_TORQUE, PhysicsConstants.ELBOW_KNEE_LIMIT_DAMPING)
+	# Knees: shins relative to thighs
+	_limit_angle_pair(left_leg, upper_left_leg, PhysicsConstants.KNEE_ANGLE_MIN, PhysicsConstants.KNEE_ANGLE_MAX, PhysicsConstants.ELBOW_KNEE_LIMIT_TORQUE, PhysicsConstants.ELBOW_KNEE_LIMIT_DAMPING)
+	_limit_angle_pair(right_leg, upper_right_leg, PhysicsConstants.KNEE_ANGLE_MIN, PhysicsConstants.KNEE_ANGLE_MAX, PhysicsConstants.ELBOW_KNEE_LIMIT_TORQUE, PhysicsConstants.ELBOW_KNEE_LIMIT_DAMPING)
+
+func _limit_angle_pair(child: RigidBody2D, parent: RigidBody2D, min_deg: float, max_deg: float, limit_torque: float, limit_damping: float):
+	var relative_angle = rad_to_deg(child.rotation - parent.rotation)
+	# Normalize to [-180, 180]
+	relative_angle = fmod(relative_angle + 180.0, 360.0) - 180.0
+
+	var correction = 0.0
+	if relative_angle < min_deg:
+		correction = min_deg - relative_angle
+	elif relative_angle > max_deg:
+		correction = max_deg - relative_angle
+
+	if correction != 0.0:
+		child.apply_torque(deg_to_rad(correction) * limit_torque)
+		child.angular_velocity *= limit_damping
+
+func _straighten_legs_for_standing():
+	for pair in [[upper_left_leg, left_leg], [upper_right_leg, right_leg]]:
+		var thigh = pair[0]
+		var shin = pair[1]
+		# Knee spring: push shin rotation toward thigh rotation (straight leg)
+		var knee_angle = shin.rotation - thigh.rotation
+		shin.apply_torque(-knee_angle * PhysicsConstants.KNEE_STRAIGHTEN_TORQUE)
+		shin.angular_velocity *= PhysicsConstants.KNEE_STRAIGHTEN_DAMPING
+		# Keep thigh vertical with damping
+		thigh.apply_torque(-thigh.rotation * PhysicsConstants.THIGH_UPRIGHT_TORQUE)
+		thigh.angular_velocity *= PhysicsConstants.THIGH_UPRIGHT_DAMPING
+		# Also push shin toward vertical (prevents splayed-out legs)
+		shin.apply_torque(-shin.rotation * PhysicsConstants.THIGH_UPRIGHT_TORQUE * 0.5)
 
 func _clamp_torso_above_holds():
 	# Prevent cartwheeling: when arms are latched, the torso can't rise above

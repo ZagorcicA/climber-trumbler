@@ -41,6 +41,7 @@ script = ExtResource("5_camera")
 [node name="UI" type="CanvasLayer" parent="."]
 
 [node name="StaminaBar" parent="UI" instance=ExtResource("4_stamina")]
+visible = false
 
 [node name="Hold1" parent="." instance=ExtResource("3_x4u4f")]
 position = Vector2(758, 505)

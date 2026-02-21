@@ -18,18 +18,32 @@ var joint_l_hip: Vector2
 var joint_r_hip: Vector2
 
 
+var upper_left_arm: RigidBody2D
+var upper_right_arm: RigidBody2D
+var upper_left_leg: RigidBody2D
+var upper_right_leg: RigidBody2D
+
 func _ready():
 	var player = get_parent()
 	bodies = [
 		player.get_node("Torso"),
 		player.get_node("Head"),
+		player.get_node("UpperLeftArm"),
 		player.get_node("LeftArm"),
+		player.get_node("UpperRightArm"),
 		player.get_node("RightArm"),
+		player.get_node("UpperLeftLeg"),
 		player.get_node("LeftLeg"),
+		player.get_node("UpperRightLeg"),
 		player.get_node("RightLeg"),
 	]
 
 	torso = bodies[0]
+	upper_left_arm = bodies[2]
+	upper_right_arm = bodies[4]
+	upper_left_leg = bodies[6]
+	upper_right_leg = bodies[8]
+
 	joint_neck = PhysicsConstants.JOINT_POS_NECK
 	joint_l_shoulder = PhysicsConstants.JOINT_POS_LEFT_ARM
 	joint_r_shoulder = PhysicsConstants.JOINT_POS_RIGHT_ARM
@@ -65,16 +79,30 @@ func _draw():
 	var r_hp = to_local(torso.to_global(joint_r_hip))
 	var hip_mid = (l_hp + r_hp) * 0.5
 
-	# Limb top (joint end) and tip (hand/foot) — follows limb rotation
+	# Upper limb positions (top and bottom of each upper segment)
 	var head_pos = to_local(bodies[1].global_position)
-	var l_arm_top = to_local(bodies[2].to_global(Vector2(0, -40)))
-	var l_arm_tip = to_local(bodies[2].get_node("GrabArea").global_position)
-	var r_arm_top = to_local(bodies[3].to_global(Vector2(0, -40)))
-	var r_arm_tip = to_local(bodies[3].get_node("GrabArea").global_position)
-	var l_leg_top = to_local(bodies[4].to_global(Vector2(0, -40)))
-	var l_leg_tip = to_local(bodies[4].get_node("GrabArea").global_position)
-	var r_leg_top = to_local(bodies[5].to_global(Vector2(0, -40)))
-	var r_leg_tip = to_local(bodies[5].get_node("GrabArea").global_position)
+	var ul_arm_top = to_local(upper_left_arm.to_global(Vector2(0, -20)))
+	var ul_arm_bot = to_local(upper_left_arm.to_global(Vector2(0, 20)))   # elbow
+	var ur_arm_top = to_local(upper_right_arm.to_global(Vector2(0, -20)))
+	var ur_arm_bot = to_local(upper_right_arm.to_global(Vector2(0, 20)))  # elbow
+
+	# Lower limb (forearm/shin) positions
+	var l_arm_top = to_local(bodies[3].to_global(Vector2(0, -20)))
+	var l_arm_tip = to_local(bodies[3].get_node("GrabArea").global_position)
+	var r_arm_top = to_local(bodies[5].to_global(Vector2(0, -20)))
+	var r_arm_tip = to_local(bodies[5].get_node("GrabArea").global_position)
+
+	# Upper legs (thighs)
+	var ul_leg_top = to_local(upper_left_leg.to_global(Vector2(0, -20)))
+	var ul_leg_bot = to_local(upper_left_leg.to_global(Vector2(0, 20)))   # knee
+	var ur_leg_top = to_local(upper_right_leg.to_global(Vector2(0, -20)))
+	var ur_leg_bot = to_local(upper_right_leg.to_global(Vector2(0, 20)))  # knee
+
+	# Lower legs (shins)
+	var l_leg_top = to_local(bodies[7].to_global(Vector2(0, -20)))
+	var l_leg_tip = to_local(bodies[7].get_node("GrabArea").global_position)
+	var r_leg_top = to_local(bodies[9].to_global(Vector2(0, -20)))
+	var r_leg_tip = to_local(bodies[9].get_node("GrabArea").global_position)
 
 	var line_color = PhysicsConstants.COM_LINE_COLOR
 	var line_width = PhysicsConstants.COM_LINE_WIDTH
@@ -85,26 +113,36 @@ func _draw():
 	draw_line(neck, hip_mid, line_color, line_width)          # Spine
 	draw_line(l_hp, r_hp, line_color, line_width)            # Hip bar
 
-	# Skeleton: connectors (torso joint → limb top) + limb axis (top → tip)
-	draw_line(l_sh, l_arm_top, line_color, line_width)       # L.shoulder → L.arm top
-	draw_line(l_arm_top, l_arm_tip, line_color, line_width)  # L.arm along sprite
-	draw_line(r_sh, r_arm_top, line_color, line_width)       # R.shoulder → R.arm top
-	draw_line(r_arm_top, r_arm_tip, line_color, line_width)  # R.arm along sprite
-	draw_line(l_hp, l_leg_top, line_color, line_width)       # L.hip → L.leg top
-	draw_line(l_leg_top, l_leg_tip, line_color, line_width)  # L.leg along sprite
-	draw_line(r_hp, r_leg_top, line_color, line_width)       # R.hip → R.leg top
-	draw_line(r_leg_top, r_leg_tip, line_color, line_width)  # R.leg along sprite
+	# Arms: shoulder → upper arm → elbow → forearm → hand
+	draw_line(l_sh, ul_arm_top, line_color, line_width)
+	draw_line(ul_arm_top, ul_arm_bot, line_color, line_width)
+	draw_line(ul_arm_bot, l_arm_top, line_color, line_width)
+	draw_line(l_arm_top, l_arm_tip, line_color, line_width)
+	draw_line(r_sh, ur_arm_top, line_color, line_width)
+	draw_line(ur_arm_top, ur_arm_bot, line_color, line_width)
+	draw_line(ur_arm_bot, r_arm_top, line_color, line_width)
+	draw_line(r_arm_top, r_arm_tip, line_color, line_width)
 
-	# Joint anchor dots
+	# Legs: hip → thigh → knee → shin → foot
+	draw_line(l_hp, ul_leg_top, line_color, line_width)
+	draw_line(ul_leg_top, ul_leg_bot, line_color, line_width)
+	draw_line(ul_leg_bot, l_leg_top, line_color, line_width)
+	draw_line(l_leg_top, l_leg_tip, line_color, line_width)
+	draw_line(r_hp, ur_leg_top, line_color, line_width)
+	draw_line(ur_leg_top, ur_leg_bot, line_color, line_width)
+	draw_line(ur_leg_bot, r_leg_top, line_color, line_width)
+	draw_line(r_leg_top, r_leg_tip, line_color, line_width)
+
+	# Joint anchor dots (torso joints + elbows + knees)
 	var joint_color = PhysicsConstants.COM_JOINT_COLOR
 	var joint_radius = PhysicsConstants.COM_JOINT_RADIUS
-	for pos in [neck, l_sh, r_sh, l_hp, r_hp]:
+	for pos in [neck, l_sh, r_sh, l_hp, r_hp, ul_arm_bot, ur_arm_bot, ul_leg_bot, ur_leg_bot]:
 		draw_circle(pos, joint_radius, joint_color)
 
-	# Body part dots (torso/head center, limb tops + tips)
+	# Body part dots (torso/head center, limb segment endpoints)
 	draw_circle(to_local(bodies[0].global_position), joint_radius, joint_color)
 	draw_circle(head_pos, joint_radius, joint_color)
-	for pos in [l_arm_top, l_arm_tip, r_arm_top, r_arm_tip, l_leg_top, l_leg_tip, r_leg_top, r_leg_tip]:
+	for pos in [ul_arm_top, l_arm_tip, ur_arm_top, r_arm_tip, ul_leg_top, l_leg_tip, ur_leg_top, r_leg_tip]:
 		draw_circle(pos, joint_radius, joint_color)
 
 	# Stamina-driven color

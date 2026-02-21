@@ -27,13 +27,16 @@ func track_position(world_position: Vector2):
 	target_rotation = direction.angle() + PI/2  # Adjust because sprite faces UP by default (not right)
 
 
-	# Clamp to max angle to prevent unnatural neck breaking
+	# Clamp with asymmetric limits (positive = looking down, negative = looking up)
 	var current_angle = rotation
 	var angle_diff = wrapf(target_rotation - current_angle, -PI, PI)
-	var max_angle_rad = deg_to_rad(PhysicsConstants.HEAD_MAX_LOOK_ANGLE)
+	var max_down_rad = deg_to_rad(PhysicsConstants.HEAD_LOOK_ANGLE_DOWN)
+	var max_up_rad = deg_to_rad(PhysicsConstants.HEAD_LOOK_ANGLE_UP)
 
-	if abs(angle_diff) > max_angle_rad:
-		target_rotation = current_angle + sign(angle_diff) * max_angle_rad
+	if angle_diff > max_down_rad:
+		target_rotation = current_angle + max_down_rad
+	elif angle_diff < -max_up_rad:
+		target_rotation = current_angle - max_up_rad
 
 func stop_tracking():
 	"""Stop tracking and return to idle (upright) behavior"""

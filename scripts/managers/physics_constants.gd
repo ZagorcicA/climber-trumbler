@@ -30,6 +30,12 @@ const MASS_ARM: float = 1.1
 const MASS_LEG: float = 3.85
 # Total: 1.8 + 9.5 + (1.1 * 2) + (3.85 * 2) = 21.2
 
+# SPLIT LIMB MASSES (upper + lower = original total)
+const MASS_UPPER_ARM: float = 0.6       # Shoulder to elbow
+const MASS_FOREARM: float = 0.5          # Elbow to hand (0.6+0.5=1.1=MASS_ARM)
+const MASS_THIGH: float = 2.2            # Hip to knee
+const MASS_SHIN: float = 1.65            # Knee to foot (2.2+1.65=3.85=MASS_LEG)
+
 # ============================================================
 # BODY PART POSITIONS (relative to torso center, pixels)
 # ============================================================
@@ -66,6 +72,8 @@ const ANGULAR_DAMP_LIMB: float = 0.3
 const JOINT_SOFTNESS_NECK: float = 0.3
 const JOINT_SOFTNESS_ARM: float = 0.4
 const JOINT_SOFTNESS_LEG: float = 0.4
+const JOINT_SOFTNESS_ELBOW: float = 0.15   # Stiffer than shoulder — bones don't stretch
+const JOINT_SOFTNESS_KNEE: float = 0.15
 const JOINT_SOFTNESS_LATCH: float = 0.05   # Rigid grip on holds
 
 # Joint positions (relative to torso center)
@@ -75,6 +83,18 @@ const JOINT_POS_RIGHT_ARM: Vector2 = Vector2(30, -50)
 const JOINT_POS_LEFT_LEG: Vector2 = Vector2(-22, 50)
 const JOINT_POS_RIGHT_LEG: Vector2 = Vector2(22, 50)
 
+# Elbow/knee joint positions (relative to Player origin)
+const JOINT_POS_LEFT_ELBOW: Vector2 = Vector2(-30, -10)
+const JOINT_POS_RIGHT_ELBOW: Vector2 = Vector2(30, -10)
+const JOINT_POS_LEFT_KNEE: Vector2 = Vector2(-22, 90)
+const JOINT_POS_RIGHT_KNEE: Vector2 = Vector2(22, 90)
+
+# Upper limb initial positions
+const POS_UPPER_LEFT_ARM: Vector2 = Vector2(-30, -30)
+const POS_UPPER_RIGHT_ARM: Vector2 = Vector2(30, -30)
+const POS_UPPER_LEFT_LEG: Vector2 = Vector2(-22, 70)
+const POS_UPPER_RIGHT_LEG: Vector2 = Vector2(22, 70)
+
 # ============================================================
 # MOVEMENT FORCES
 # ============================================================
@@ -82,14 +102,15 @@ const MOVE_FORCE: float = 15000.0         # Force limb applies toward mouse
 const MOVE_FORCE_EXHAUSTED: float = 5000.0 # Force at 0 stamina (sluggish response)
 const MAX_VELOCITY: float = 800.0          # Limb speed cap (pixels/s)
 const MAX_VELOCITY_EXHAUSTED: float = 350.0 # Speed cap at 0 stamina
-const MOVE_DAMPING: float = 0.99           # Velocity retention per frame
+const MOVE_DAMPING: float = 0.92           # Velocity retention per frame (lower = faster oscillation decay)
 const MOVE_DEAD_ZONE: float = 10.0         # Pixels before force applies
+const MOVE_FORCE_RAMP: float = 150.0       # Pixels over which force ramps from 0→full
 
 # ============================================================
 # STANDING SUPPORT
 # ============================================================
-const STAND_SUPPORT_FORCE: float = 2500.0
-const STAND_UPRIGHT_TORQUE: float = 5000.0
+const STAND_SUPPORT_FORCE: float = 4500.0
+const STAND_UPRIGHT_TORQUE: float = 6000.0
 const STAND_DAMPING: float = 0.85
 
 # ============================================================
@@ -97,7 +118,8 @@ const STAND_DAMPING: float = 0.85
 # ============================================================
 const HEAD_LOOK_SPEED: float = 50.0
 const HEAD_UPRIGHT_FORCE: float = 3000.0   # Reserved for future use
-const HEAD_MAX_LOOK_ANGLE: float = 80.0    # Degrees
+const HEAD_LOOK_ANGLE_DOWN: float = 60.0   # Degrees — looking down (toward holds below)
+const HEAD_LOOK_ANGLE_UP: float = 40.0     # Degrees — looking up (limited by neck)
 const HEAD_UPRIGHT_CORRECTION: float = 10.0
 
 # ============================================================
@@ -184,4 +206,26 @@ const COM_ANCHOR_RADIUS: float = 5.0                 # Anchor dot at ideal CoM p
 
 # COM INERTIA (smoothing — lower = more sluggish, less mouse-reactive)
 const COM_SMOOTHING: float = 0.08                    # Exponential lerp weight per frame
+
+# ============================================================
+# JOINT ANGLE LIMITS (code-enforced, degrees)
+# ============================================================
+const SHOULDER_ANGLE_MIN: float = -160.0    # Max forward/upward reach
+const SHOULDER_ANGLE_MAX: float = 160.0     # Max backward reach (blocked behind back)
+const JOINT_LIMIT_TORQUE: float = 8000.0    # Corrective torque strength at limit
+const JOINT_LIMIT_DAMPING: float = 0.8      # Angular velocity damping when hitting limit
+
+# Elbow/knee angle limits (symmetric — character can face either way)
+const ELBOW_ANGLE_MIN: float = -150.0
+const ELBOW_ANGLE_MAX: float = 150.0
+const KNEE_ANGLE_MIN: float = -135.0
+const KNEE_ANGLE_MAX: float = 135.0
+const ELBOW_KNEE_LIMIT_TORQUE: float = 3000.0
+const ELBOW_KNEE_LIMIT_DAMPING: float = 0.7
+
+# Standing knee spring (prevents collapse when standing)
+const KNEE_STRAIGHTEN_TORQUE: float = 6000.0   # Simulates quadriceps locking knee
+const THIGH_UPRIGHT_TORQUE: float = 5000.0     # Keeps thighs vertical when standing
+const KNEE_STRAIGHTEN_DAMPING: float = 0.85
+const THIGH_UPRIGHT_DAMPING: float = 0.85
 
